@@ -16,28 +16,23 @@ class QualityFilter(pyNGSQC.NGSQC):
             qual_threshold (int): minimum "pass" phred score
             pass_rate (float): minimum fraction of 
     """
+    
     def __init__(self, in_file_name, out_file_name, qual_threshold=15,
-                  pass_rate=0.9, max_Ns=-1, qual_offset=64, append=False,
+                  pass_rate=0.9, max_Ns=-1, qual_offset=64,
                   compression=pyNGSQC.GUESS_COMPRESSION):
         
-        super(QualityFilter, self).__init__(in_file_name, out_file_name,
-                  qual_offset=qual_offset, append=append,
-                  compression=compression)
+        super(QualityFilter, self).__init__(
+                                            in_file_name,
+                                            out_file_name,
+                                            qual_offset=qual_offset,
+                                            compression=compression
+                                           )
         
         self.pass_rate = float(pass_rate)
         self.qual_threshold = qual_threshold
         self.max_Ns = max_Ns
     
-    def _has_Ns(self, read):
-        #seq_header, seq, qual_header, qual = read
-        seq = read[1]
-        seq = seq.upper()
-        if "N" not in seq:
-            return False
-        else:
-            return seq.count('N')
-
-    def _has_low_score(self,read):
+    def _passes_score_qc(self,read):
         qual = read[3]
         read_len = len(qual)
         low_scores = 0
@@ -52,10 +47,10 @@ class QualityFilter(pyNGSQC.NGSQC):
             
     def filter_read(self, read):
         # the and max_Ns >= 0 skips the N-check if not required
-        if self.max_Ns >= 0 and int(self._has_Ns(read)) > self.max_Ns :
+        if self.max_Ns >= 0 and int(self._num_Ns_in_read(read)) > self.max_Ns :
             self.num_bad_reads += 1
             return False
-        elif self._has_low_score(read):
+        elif self._passes_score_qc(read):
             self.num_bad_reads += 1
             return False
         else:
@@ -64,7 +59,7 @@ class QualityFilter(pyNGSQC.NGSQC):
     
     def process_read(self, this_read):
         if self.filter_read(this_read):
-                    self._write_good_read(this_read)
+                    self.writer.write(this_read)
     
     def run(self):
         self._run(self.process_read, self.print_summary)

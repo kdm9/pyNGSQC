@@ -81,6 +81,7 @@ class FastqIO(object):
     READ = 0
     WRITE = 1
     #APPEND = 2 # APPEND NOT SUPPORTED YET
+    
     def __init__(self, file_name, mode=READ, compression=GUESS_COMPRESSION):
         self.file_name = file_name
         if mode == self.READ or mode == self.WRITE:
@@ -118,10 +119,9 @@ class FastqIO(object):
     
     def _get_plaintext(self):
         if mode == self.READ:
-            self.in_file = open(self.file_name, "rb")
+            return open(self.file_name, "rb")
         elif mode == self.WRITE:
-            self.out_file = open(self.file_name, "wb")
-        
+            return open(self.file_name, "wb")
     
     def _get_gzip(self):
         if mode == self.READ:
