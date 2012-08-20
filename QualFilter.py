@@ -1,7 +1,8 @@
 import pyNGSQC
+from sys import stderr
 
 
-class QualityFilter(pyNGSQC.NGSQC):
+class QualFilter(pyNGSQC.NGSQC):
     """
     Usage:
         QualityFilter(in_file_name, out_file_name, qual_threshold=15,
@@ -12,17 +13,21 @@ class QualityFilter(pyNGSQC.NGSQC):
             out_file_name (str): path of output file, can be .fastq, .fastq.gz
                 or .fastq.bz2
             qual_threshold (int): minimum "pass" phred score
-            pass_rate (float): minimum fraction of
+            pass_rate (float): minimum fraction of bases which must be equal
+                to or greater than qual_threshold
     """
 
     def __init__(self, in_file_name, out_file_name, qual_threshold=15,
                   pass_rate=0.9, max_Ns=-1, qual_offset=64,
                   compression=pyNGSQC.GUESS_COMPRESSION):
-        self.in_file = pyNGSQC.FastqReader(
-                                            in_file_name,
-                                            compression=compression
+        self.reader = pyNGSQC.FastqReader(
+                                           in_file_name,
+                                           compression=compression
+                                         )
+        self.writer = pyNGSQC.FastqWriter(
+                                           out_file_name,
+                                           compression=compression
                                           )
-
         self.pass_rate = float(pass_rate)
         self.qual_threshold = qual_threshold
         self.max_Ns = max_Ns
@@ -52,12 +57,26 @@ class QualityFilter(pyNGSQC.NGSQC):
             self.num_good_reads += 1
             return True
 
-    def process_read(self, this_read):
-        if self.filter_read(this_read):
-                    self.writer.write(this_read)
+    def print_summary(self):
+        stderr.write("QC check finished:\n")
+        stderr.write(
+                "\t%i sequences passed QC, wrote them to %s\n" %
+                (self.num_good_reads, self.out_file_name)
+            )
+        stderr.write(
+                      "\t%i sequences failed QC, and were ignored\n" %
+                      self.num_bad_reads,
+                    )
 
     def run(self):
-        self._run(self.process_read, self.print_summary)
+        for read in self.reader:
+            if self.filter_read(read):
+                self.writer.write(read)
+                self.good_reads += 1
+            else:
+                self.bad_read += 1
+        self.print_summary()
+
 
 if __name__ == "__main__":
     import sys

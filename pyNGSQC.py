@@ -1,7 +1,7 @@
 import gzip
 import bz2
 import os.path
-from sys import stderr
+
 
 #TODO
 ## Make proper docstrings
@@ -52,16 +52,6 @@ class NGSQC(object):
         return qual
 
     # General Methods:
-    def print_summary(self):
-        stderr.write("QC check finished:\n")
-        stderr.write(
-                "\t%i sequences passed QC, wrote them to %s\n" %
-                (self.num_good_reads, self.out_file_name)
-            )
-        stderr.write(
-                      "\t%i sequences failed QC, and were ignored\n" %
-                      self.num_bad_reads,
-                    )
 
     # Inherited methods, used only within children
     def _run(self, read_method, final_method):
@@ -156,7 +146,7 @@ class FastqWriter(FastqIO):
                               file_name,
                               mode=_GenericIO.WRITE,
                               compression=compression
-                            )
+                            ).get()
 
     def write(self, read):
         for line in read:
