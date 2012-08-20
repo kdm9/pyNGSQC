@@ -1,0 +1,7 @@
+{
+  "venv": "", 
+  "project-type": "Import from sources", 
+  "name": "pyNGSQC", 
+  "license": "GNU General Public License v3", 
+  "description": "fastx-toolkit like NGS quality control and data massager\t\t\t\t\t"
+}
