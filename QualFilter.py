@@ -2,14 +2,30 @@ import pyNGSQC
 from sys import stderr
 
 
-class QualStats(pyNGSQC.NGSQC):
+class QualFilter(pyNGSQC.NGSQC):
     """
     Usage:
+        QualityFilter(in_file_name, out_file_name, qual_threshold=15,
+                  pass_rate=0.9, max_Ns=-1, qual_offset=64, append=False,
+                  compression=pyNGSQC.GUESS_COMPRESSION):
+            in_file_name (str): path of input file, can be .fastq, .fastq.gz
+                or .fastq.bz2
+            out_file_name (str): path of output file, can be .fastq, .fastq.gz
+                or .fastq.bz2
+            qual_threshold (int): minimum "pass" phred score
+            pass_rate (float): minimum fraction of bases which must be equal
+                to or greater than qual_threshold
     """
 
-    def __init__(self, in_file_name, out_file_name, qual_threshold=15,
-                  pass_rate=0.9, max_Ns=-1, qual_offset=64,
-                  compression=pyNGSQC.GUESS_COMPRESSION):
+    def __init__(self,
+                 in_file_name,
+                 out_file_name,
+                 qual_threshold=15,
+                 pass_rate=0.9,
+                 max_Ns=-1,
+                 qual_offset=64,
+                 compression=pyNGSQC.GUESS_COMPRESSION
+                ):
         self.in_file_name = in_file_name
         self.out_file_name = out_file_name
         self.reader = pyNGSQC.FastqReader(

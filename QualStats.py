@@ -2,7 +2,7 @@ from sys import stderr
 import pyNGSQC
 
 
-class QualTrimmer(pyNGSQC.NGSQC):
+class QualStats(pyNGSQC.NGSQC):
     def __init__(
                  self,
                  in_file_name,
