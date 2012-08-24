@@ -21,6 +21,9 @@ BARCODE_FORWARD_REVERSE = 0  # Not Implemented
 ## CSV DIALECTS
 SNIFF_CSV_DIALECT = 0
 
+## OUTPUT OBJECTS
+STDOUT = 0
+
 
 class NGSQC(object):
     def __init__(self, in_file_name, out_file_name, qual_offset=64,
@@ -158,10 +161,13 @@ class FastqReader(FastqIO):
     def __init__(
                   self,
                   file_name,
+                  deduplicate_header=True,
                   compression=GUESS_COMPRESSION
                 ):
+        self.file_name = file_name
+        self.deduplicate_header = deduplicate_header
         self.io = _GenericIO(
-                              file_name,
+                              self.file_name,
                               mode=_GenericIO.READ,
                               compression=compression
                             ).get()
@@ -184,6 +190,17 @@ class FastqReader(FastqIO):
                     at_start = False
             this_read.append(line)
             if len(this_read) == 4:
-                return this_read
+                if not len(this_read[1]) == len(this_read[3]):
+                    err = "Read %s has seq and qual of different lengths"
+                    raise ValueError(err % repr(this_read))
+                if not this_read[2][0] == "+":
+                    err = "Read %s has no quality header, or is misformed"
+                    raise ValueError(err % repr(this_read))
+                if self.deduplicate_header:
+                    # Save space, remove duplicate headers
+                    if this_read[0][1:] == this_read[0][2:]:
+                        this_read[2] = "+"
                 self.num_records += 1
+                return this_read
+
         raise StopIteration
