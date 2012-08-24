@@ -28,9 +28,9 @@ class NGSQC(object):
         self.in_file_name = in_file_name
         self.out_file_name = out_file_name
         self.qual_offset = qual_offset
-        self.num_good_reads = 0
-        self.num_bad_reads = 0
-        self.num_records = -1
+        self.num_good_reads = 0L
+        self.num_bad_reads = 0L
+        self.num_records = -1L
 
     # Sub-methods:
     def _num_Ns_in_read(self, read):
@@ -142,6 +142,7 @@ class FastqIO():
 
 class FastqWriter(FastqIO):
     def __init__(self, file_name, compression=GUESS_COMPRESSION):
+        self.num_records = 0L
         self.io = _GenericIO(
                               file_name,
                               mode=_GenericIO.WRITE,
@@ -164,7 +165,7 @@ class FastqReader(FastqIO):
                               mode=_GenericIO.READ,
                               compression=compression
                             ).get()
-        self.num_records = 0
+        self.num_records = 0L
 
     def __iter__(self):
         return self
@@ -172,7 +173,9 @@ class FastqReader(FastqIO):
     def next(self):
         this_read = []
         at_start = True
+        num_lines = 0
         for line in self.io:
+            num_lines += 1
             line = line.strip()
             if at_start:
                 if line[0] != "@":

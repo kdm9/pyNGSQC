@@ -2,19 +2,9 @@ import pyNGSQC
 from sys import stderr
 
 
-class QualFilter(pyNGSQC.NGSQC):
+class QualStats(pyNGSQC.NGSQC):
     """
     Usage:
-        QualityFilter(in_file_name, out_file_name, qual_threshold=15,
-                  pass_rate=0.9, max_Ns=-1, qual_offset=64, append=False,
-                  compression=pyNGSQC.GUESS_COMPRESSION):
-            in_file_name (str): path of input file, can be .fastq, .fastq.gz
-                or .fastq.bz2
-            out_file_name (str): path of output file, can be .fastq, .fastq.gz
-                or .fastq.bz2
-            qual_threshold (int): minimum "pass" phred score
-            pass_rate (float): minimum fraction of bases which must be equal
-                to or greater than qual_threshold
     """
 
     def __init__(self, in_file_name, out_file_name, qual_threshold=15,
@@ -46,7 +36,6 @@ class QualFilter(pyNGSQC.NGSQC):
             if self._get_qual_from_phred(p) < self.qual_threshold:
                 low_scores += 1
         this_pass_rate = 1.0 - float(low_scores) / float(read_len)
-        print this_pass_rate, self.pass_rate, this_pass_rate <= self.pass_rate
         if this_pass_rate <= self.pass_rate:
             return False
         else:
@@ -56,14 +45,11 @@ class QualFilter(pyNGSQC.NGSQC):
         if self.max_Ns != -1 and\
          int(self._num_Ns_in_read(read)) > self.max_Ns:
             self.num_bad_reads += 1
-            print "too many Ns"
             return False
         elif not self._passes_score_qc(read):
             self.num_bad_reads += 1
-            print "bad score"
             return False
         else:
-            print "good read"
             self.num_good_reads += 1
             return True
 
@@ -85,13 +71,4 @@ class QualFilter(pyNGSQC.NGSQC):
             if self.filter_read(read):
                 self.writer.write(read)
         self.print_summary()
-
-
-if __name__ == "__main__":
-    import sys
-    qf = QualFilter(sys.argv[1],
-                       sys.argv[2],
-                       compression=int(sys.argv[3]),
-                       pass_rate=1.0,
-                       qual_offset=33)
-    qf.run()
+        return True
