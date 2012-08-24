@@ -26,9 +26,9 @@ class QualStats(pyNGSQC.NGSQC):
         # Set default dicts for the position_bases and position_qualities lists
         bases = list("AGCTSWRYKAN-")
         self.initial_base_counts = dict.fromkeys(bases, 0)
-        # 126 is the last printable character in ASCII
-        scores = [iii for iii in xrange(self.qual_offset, 126)]
-        self.initial_score_counts = dict.fromkeys(scores, 0)
+        # 126 is the last printable character in ASCII, store as list as keys
+        # are integers, saves mem
+        self.initial_score_counts = [0 for iii in xrange(self.qual_offset, 126)]
 
     def print_output(self):
         stderr.write("QualTrimmer finished:\n")
@@ -42,19 +42,19 @@ class QualStats(pyNGSQC.NGSQC):
                     )
 
     def process_read(self, read):
-        while len(self.position_scores) < len(read[1]):
+        while len(self.position_bases) < 101:  # len(read[1]):
             self.position_bases.append(dict(self.initial_base_counts))
-        while len(self.position_scores) < len(read[1]):
-            self.position_scores.append(dict(self.initial_score_counts))
+        while len(self.position_scores) < 101:  # len(read[1]):
+            self.position_scores.append(list(self.initial_score_counts))
 
         for bbb in xrange(len(read[1])):
             base = read[1][bbb]
             score = self._get_qual_from_phred(read[3][bbb])
-            try:
-                self.position_scores[bbb][score] += 1
-                self.position_bases[bbb][base] += 1
-            except KeyError:
-                pass
+            #try:
+            self.position_scores[bbb][score] += 1
+            self.position_bases[bbb][base] += 1
+            #except KeyError:
+            #    pass
 
     def run(self):
         for read in self.reader:
@@ -69,3 +69,8 @@ class QualStats(pyNGSQC.NGSQC):
 
 qs = QualStats("/home/kevin/UniWork/BIOL3157/Assignments/2/U4852380.txt")
 qs.run()
+for i in dir(qs):
+    if i[0] != "_":
+        mem = getattr(qs, i)
+        if hasattr(mem, "__len__"):
+            print i, len(mem)
