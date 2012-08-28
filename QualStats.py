@@ -1,4 +1,4 @@
-from sys import stderr
+#from sys import stderr
 import pyNGSQC
 
 
@@ -44,11 +44,8 @@ class QualStats(pyNGSQC.NGSQC):
         for bbb in xrange(len(read[1])):
             base = read[1][bbb]
             score = self._get_qual_from_phred(read[3][bbb])
-            #try:
             self.position_scores[bbb][score] += 1
             self.position_bases[bbb][base] += 1
-            #except KeyError:
-            #    pass
 
     def run(self):
         for read in self.reader:
@@ -56,7 +53,3 @@ class QualStats(pyNGSQC.NGSQC):
             self.process_read(read)
         self.print_summary()
         return True
-
-
-qs = QualStats("/home/kevin/UniWork/BIOL3157/Assignments/2/U4852380.txt")
-qs.run()

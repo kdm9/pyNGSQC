@@ -22,7 +22,7 @@ class QualTrimmer(pyNGSQC.NGSQC):
         self.writer = pyNGSQC.FastqWriter(
                                            self.out_file_name,
                                            compression=compression
-                                          )
+                                         )
         self.qual_threshold = qual_threshold
         self.remove_trailing_Ns = remove_trailing_Ns
         self.qual_offset = qual_offset

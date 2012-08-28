@@ -1,5 +1,6 @@
 import pyNGSQC as ngs
 import QualFilter as qfil
+import QualStats as qstat
 import QualTrimmer as qtrim
 import HardTrimmer as htrim
 import BarcodeSplitter as bcs
@@ -10,7 +11,7 @@ import unittest
 #prefix = "/home/kevin/UniWork/BIOL3157/Assignments/2/"
 prefix = "/home/kevin/workspace/"
 #prefix = "/var/ws/borevitz/"
-in_file = prefix + "in.fastq"  # "big.fastq" "pel_huge.txt"
+in_file = prefix + "pel_huge.txt"  # "in.fastq"  # "big.fastq" "pel_huge.txt"
 out_dir = prefix + "out/"
 timer = time.time()
 
@@ -36,7 +37,8 @@ class pyNGSQCtester(unittest.TestCase):
         self.assertEqual(retval, True)
 
     def testQualTrimmer(self):
-        qt = qtrim.QualTrimmer(in_file, out_dir + "qt.fastq", qual_threshold=20)
+        qt = qtrim.QualTrimmer(
+            in_file, out_dir + "qt.fastq", qual_threshold=20)
         retval = qt.run()
         print "testQualTrimmer took %.3f sec" % (time.time() - self.timer)
         self.timer = time.time()
@@ -54,6 +56,13 @@ class pyNGSQCtester(unittest.TestCase):
         ht = htrim.HardTrimmer(in_file, out_dir + "ht.fastq", length=30)
         retval = ht.run()
         print "testHardTrimmer took %.3f sec" % (time.time() - self.timer)
+        self.timer = time.time()
+        self.assertEqual(retval, True)
+
+    def testQualStats(self):
+        qs = qstat.QualStats(in_file)
+        retval = qs.run()
+        print "testQualStats took %.3f sec" % (time.time() - self.timer)
         self.timer = time.time()
         self.assertEqual(retval, True)
 

@@ -202,5 +202,61 @@ class FastqReader(FastqIO):
                         this_read[2] = "+"
                 self.num_records += 1
                 return this_read
-
         raise StopIteration
+
+
+class FastqRandomAccess(FastqIO):
+    def __init__(
+                  self,
+                  file_name,
+                  deduplicate_header=True,
+                  compression=GUESS_COMPRESSION
+                ):
+        self.file_name = file_name
+        self.deduplicate_header = deduplicate_header
+        self.io = _GenericIO(
+                              self.file_name,
+                              mode=_GenericIO.READ,
+                              compression=compression
+                            ).get()
+        self.num_records = 0L
+        self.record_positions = []
+        self._build_cache()
+
+    def get(self, index):
+        start_pos = self.record_positions[index]
+        self.io.seek(start_pos)
+        this_read = []
+        for iii in xrange(4):
+            this_read.append(self.io.readline())
+        #print index, this_read
+        if not len(this_read[1]) == len(this_read[3]):
+            err = "Read %s has seq and qual of different lengths"
+            raise ValueError(err % repr(this_read))
+        if not this_read[2][0] == "+":
+            err = "Read %s has no quality header, or is misformed"
+            raise ValueError(err % repr(this_read))
+        if self.deduplicate_header:
+            # Save space, remove duplicate headers
+            if this_read[0][1:] == this_read[0][2:]:
+                this_read[2] = "+"
+        self.num_records += 1
+        return this_read
+
+    def _build_cache(self):
+        at_start = True
+        current_pos = 0
+        record_str = ""
+        for line in self.io:
+            if at_start:
+                if line[0] != "@":
+                    current_pos += len(line)
+                    continue
+                else:
+                    at_start = False
+            if line[0] == "@":
+                current_pos += len(record_str)
+                self.record_positions.append(current_pos)
+                record_str = line
+            else:
+                record_str += line
