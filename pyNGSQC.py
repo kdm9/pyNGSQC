@@ -244,8 +244,6 @@ class FastqRandomAccess(FastqIO):
         return this_read
 
     def _build_cache(self):
-        import time
-        print_once = True
         at_start = True
         current_pos = 0
         record_str = ""
@@ -257,12 +255,6 @@ class FastqRandomAccess(FastqIO):
                 else:
                     at_start = False
             if line[0] == "@":
-                if int(time.time()) % 10 == 0:
-                    if print_once:
-                        print current_pos, len(self.record_positions)
-                        print_once = False
-                else:
-                    print_once = True
                 current_pos += len(record_str)
                 self.record_positions.append(current_pos)
                 record_str = line
