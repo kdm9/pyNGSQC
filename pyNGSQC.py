@@ -2,6 +2,7 @@ import gzip
 import bz2
 import os.path
 from array import array
+import multiprocessing as mp
 
 #TODO
 ## Make proper docstrings
@@ -138,7 +139,7 @@ class _GenericIO(object):
             return bz2.BZ2File(self.file_name, "w")
 
 
-class FastqIO():
+class FastqIO(object):
     def __del__(self):
         self.io.close()
 
@@ -260,3 +261,134 @@ class FastqRandomAccess(FastqIO):
                 record_str = line
             else:
                 record_str += line
+
+
+def base_match(base_1, base_2, allow_ambiguity=True):
+    """
+    base_match(base_1, base_2):
+        Returns true if base_1 and base_2 are equivalent according to IUPAC
+        rules
+    """
+    if base_1 == base_2:
+        return True
+    if len(base_1) != len(base_2):
+        return False
+    ambiguity_dict = {
+        "A": ["A", "W", "M", "R", "N", "D", "H", "V"],
+        "C": ["C", "S", "M", "Y", "N", "B", "H", "V"],
+        "G": ["G", "S", "K", "R", "N", "B", "D", "V"],
+        "T": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
+        "U": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
+        "N": ["A", "G", "C", "T", "U", "W", "K", "M", "R", "Y", "N", "B", "D",
+              "H", "V"],
+        "B": ["C", "G", "T", "U"],
+        "D": ["A", "G", "T", "U"],
+        "H": ["A", "C", "T", "U"],
+        "V": ["A", "C", "G"],
+        "K": ["G", "T", "U"],
+        "M": ["A", "C"],
+        "S": ["G", "C"],
+        "W": ["A", "T", "U"],
+        "Y": ["C", "T", "U"],
+        "R": ["A", "G"]
+        }
+
+    base_dict = {
+        "A": ["A"],
+        "C": ["C"],
+        "G": ["G"],
+        "T": ["T", "U"],
+        "U": ["T", "U"]
+        }
+    try:
+        if allow_ambiguity:
+            result = base_2 in ambiguity_dict[base_1]
+        else:
+            result = base_2 in base_dict[base_1]
+    except KeyError:
+        raise ValueError("(%s, %s) is an invalid base pair" % (base_1, base_2))
+    return result
+
+
+class Process(mp.Process):
+    counter = 0
+
+    def __init__(self, task_queue, result_queue):
+        mp.Process.__init__(self)
+        self.task_queue = task_queue
+        self.result_queue = result_queue
+
+    def run(self):
+        while True:
+            next_task = self.task_queue.get()
+            if next_task is None:
+                # None is the Poison pill, means shutdown
+                self.task_queue.task_done()
+                break
+            self.counter += 1
+            #print '%s: %s' % (proc_name, next_task)
+            answer = next_task()
+            self.task_queue.task_done()
+            self.result_queue.put(answer)
+        return self.counter
+
+
+def seq_match(seq_1, seq_2, mismatches=0):
+    if seq_1 == seq_2:
+        return True
+    if len(seq_1) != len(seq_2):
+        return False
+    this_mismatches = 0
+
+    #this_mismatches = sum(map(base_match, seq_1, seq_2))
+    #for base_1, base_2 in zip(seq_1, seq_2):
+        #if not base_match(base_1, base_2):
+    for iii in xrange(len(seq_1)):
+        if not base_match(seq_1[iii], seq_2[iii]):
+            this_mismatches += 1
+        if this_mismatches > mismatches:
+            return False
+    return this_mismatches <= mismatches
+
+
+def _percentile_from_counts(count_list, percentile):
+    """Returns the median value from a list whose values are counts of the
+    index i
+    """
+    # The index of the median, or of the lower of the two values if sum is even
+    halfway_index = int(round(float(sum(count_list) * percentile))) - 1
+    current_index = 0
+    pos_within_value = 0  # Governs when we skip to the next median value
+    median = 0
+    while current_index <= halfway_index:
+        # If we have not iterated through all counts of this value of median
+        if  pos_within_value < count_list[median]:
+            pos_within_value += 1
+            current_index += 1
+        else:
+            # Move to next median
+            median += 1
+            pos_within_value = 0
+
+    # At this point, median == lower of two values if the number of counts is
+    # even, so we need to average the current value of median with the
+    # following value of median (which may be the same number) to get the
+    # median. If the number of counts is odd, then median == true median
+    if sum(count_list) % 2 == 0:
+        lower_score = median
+        if count_list[median] < pos_within_value + 1:
+            upper_score = median + 1
+        else:
+            upper_score = median
+        median = float(lower_score + upper_score) / 2.0
+    return float(median)
+
+
+def _whiskers_from_counts(count_list):
+    q1 = _percentile_from_counts(count_list, 0.25)
+    q3 = _percentile_from_counts(count_list, 0.75)
+    median = _percentile_from_counts(count_list, 0.5)
+    iqr = q3 - q1
+    left_whisker = median - 1.5 * iqr
+    right_whisker = median + 1.5 * iqr
+    return (left_whisker, right_whisker)

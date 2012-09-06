@@ -2,22 +2,29 @@ from sys import stderr
 import pyNGSQC
 import csv
 from os import path
+from pyNGSQC import seq_match
+FORWARD_ONLY = 0
+REVERSE_ONLY = 1
+FORWARD_OR_REVERSE = 2
 
 
 class BarcodeSplitter(pyNGSQC.NGSQC):
     def __init__(
-                 self,
-                 in_file_name,
-                 output_dir=None,
-                 compression=pyNGSQC.GUESS_COMPRESSION,
-                 verbose=False
-                ):
+            self,
+            in_file_name,
+            output_dir=None,
+            barcode_end=FORWARD_ONLY,
+            compression=pyNGSQC.GUESS_COMPRESSION,
+            mismatch=1,
+            verbose=False
+            ):
         self.in_file_name = in_file_name
         self.output_dir = output_dir
         self.reader = pyNGSQC.FastqReader(
-                                           self.in_file_name,
-                                           compression=compression
-                                         )
+            self.in_file_name,
+            compression=compression
+            )
+        self.mismatch = mismatch
         self.verbose = verbose
         self.barcodes = {}
         self.barcode_counts = {}
@@ -72,14 +79,17 @@ class BarcodeSplitter(pyNGSQC.NGSQC):
     def _parse_read_barcode(self, read):
         for barcode in self.barcodes:
             barcode_len = len(barcode)
-            if read[1][0:barcode_len] == barcode:
+            read_barcode = read[1][0:barcode_len]
+            if seq_match(barcode, read_barcode, mismatches=1):
                 if barcode not in self.barcode_files:
                     writer = self._get_barcode_writer(barcode)
                     self.barcode_files[barcode] = writer
                 if barcode not in self.barcode_counts:
                     self.barcode_counts[barcode] = 0
-                read[0] += " bcd:%s desc:%s" % \
-                 (barcode, self.barcodes[barcode])
+                read[0] += " bcd:%s desc:%s" % (
+                    barcode,
+                    self.barcodes[barcode]
+                    )
                 read[1] = read[1][barcode_len:]
                 read[3] = read[3][barcode_len:]
                 self.barcode_files[barcode].write(read)
@@ -88,9 +98,10 @@ class BarcodeSplitter(pyNGSQC.NGSQC):
     def print_summary(self):
         stderr.write("Barcode Splitter finished:\n")
         stderr.write(
-                      "\t%i sequences analysed, containing %s\n" %
-                      (self.num_reads, len(self.barcode_counts))
-                    )
+            "\t%i sequences analysed, containing %s\n" %
+            (self.num_reads, len(self.barcode_counts))
+            )
+
         if self.verbose:
             stderr.write("\tThe following barcodes were parsed:\n")
             for barcode, count in self.barcode_counts.iteritems():
@@ -98,8 +109,10 @@ class BarcodeSplitter(pyNGSQC.NGSQC):
 
     def run(self):
         if len(self.barcodes) < 1:
-            raise ValueError("You must supply a barcode dict or file before" +
-            " run()-ing BarcodeSplitter")
+            raise ValueError(
+                "You must supply a barcode dict or file before" +
+                " run()-ing BarcodeSplitter"
+                )
             return False
         for read in self.reader:
             self.num_reads += 1
@@ -150,9 +163,9 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         # Read 1
         read_1_split_path = path.basename(self.pair_1_file_name).split(".")
         out_path = path.join(
-                             dir_path,
-                             read_1_split_path[0] + "_%s" % identifier
-                            )
+            dir_path,
+            read_1_split_path[0] + "_%s" % identifier
+            )
         if len(read_1_split_path) > 1:
             # If the path had extensions, add them
             out_path += "." + ".".join(read_1_split_path[1:])
@@ -161,11 +174,12 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         # Read 2
         read_2_split_path = path.basename(self.pair_1_file_name).split(".")
         out_path = path.join(
-                             dir_path,
-                             read_2_split_path[0] + "_%s" % identifier
-                            )
+            dir_path,
+            read_2_split_path[0] + "_%s" % identifier
+            )
+
+        # If the path had extensions, add them
         if len(read_2_split_path) > 1:
-            # If the path had extensions, add them
             out_path += "." + ".".join(read_2_split_path[1:])
         read_2_writer = pyNGSQC.FastqWriter(out_path)
 
@@ -192,8 +206,10 @@ class PairedBarcodeSplitter(BarcodeSplitter):
 
     def run(self):
         if len(self.barcodes) < 1:
-            raise ValueError("You must supply a barcode dict or file before" +
-            " run()-ing BarcodeSplitter")
+            raise ValueError(
+                "You must supply a barcode dict or file before" +
+                " run()-ing BarcodeSplitter"
+                )
         for paired_reads in zip(self.pair_1_reader, self.pair_2_reader):
             self.num_reads += 1
             self._parse_paired_reads_barcode(paired_reads)
