@@ -81,6 +81,7 @@ class BarcodeSplitter(pyNGSQC.NGSQC):
             barcode_len = len(barcode)
             read_barcode = read[1][0:barcode_len]
             if seq_match(barcode, read_barcode, mismatches=1):
+            #if barcode == read_barcode:
                 if barcode not in self.barcode_files:
                     writer = self._get_barcode_writer(barcode)
                     self.barcode_files[barcode] = writer

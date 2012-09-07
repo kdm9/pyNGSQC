@@ -25,6 +25,26 @@ SNIFF_CSV_DIALECT = 0
 ## OUTPUT OBJECTS
 STDOUT = 0
 
+AMBIGUITY_DICT = {
+    "A": ["A", "W", "M", "R", "N", "D", "H", "V"],
+    "C": ["C", "S", "M", "Y", "N", "B", "H", "V"],
+    "G": ["G", "S", "K", "R", "N", "B", "D", "V"],
+    "T": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
+    "U": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
+    "N": ["A", "G", "C", "T", "U", "W", "K", "M", "R", "Y", "N", "B", "D",
+          "H", "V"],
+    "B": ["C", "G", "T", "U"],
+    "D": ["A", "G", "T", "U"],
+    "H": ["A", "C", "T", "U"],
+    "V": ["A", "C", "G"],
+    "K": ["G", "T", "U"],
+    "M": ["A", "C"],
+    "S": ["G", "C"],
+    "W": ["A", "T", "U"],
+    "Y": ["C", "T", "U"],
+    "R": ["A", "G"]
+    }
+
 
 class NGSQC(object):
     def __init__(self, in_file_name, out_file_name, qual_offset=64,
@@ -54,8 +74,6 @@ class NGSQC(object):
                     (qual, phred, ord(phred))
                 )
         return qual
-
-    # General Methods:
 
     # Inherited methods, used only within children
     def _run(self, read_method, final_method):
@@ -294,59 +312,35 @@ def base_match(base_1, base_2, allow_ambiguity=True):
     """
     if base_1 == base_2:
         return True
-    ambiguity_dict = {
-        "A": ["A", "W", "M", "R", "N", "D", "H", "V"],
-        "C": ["C", "S", "M", "Y", "N", "B", "H", "V"],
-        "G": ["G", "S", "K", "R", "N", "B", "D", "V"],
-        "T": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
-        "U": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
-        "N": ["A", "G", "C", "T", "U", "W", "K", "M", "R", "Y", "N", "B", "D",
-              "H", "V"],
-        "B": ["C", "G", "T", "U"],
-        "D": ["A", "G", "T", "U"],
-        "H": ["A", "C", "T", "U"],
-        "V": ["A", "C", "G"],
-        "K": ["G", "T", "U"],
-        "M": ["A", "C"],
-        "S": ["G", "C"],
-        "W": ["A", "T", "U"],
-        "Y": ["C", "T", "U"],
-        "R": ["A", "G"]
-        }
-
-    base_dict = {
-        "A": ["A"],
-        "C": ["C"],
-        "G": ["G"],
-        "T": ["T", "U"],
-        "U": ["T", "U"]
-        }
-    try:
-        if allow_ambiguity:
-            result = base_2 in ambiguity_dict[base_1]
-        else:
-            result = base_2 in base_dict[base_1]
-    except KeyError:
-        raise ValueError("(%s, %s) is an invalid base pair" % (base_1, base_2))
+    if allow_ambiguity:
+        try:
+            result = base_2 in AMBIGUITY_DICT[base_1]
+        except KeyError:
+            raise ValueError("(%s, %s) is an invalid base pair" % \
+             (base_1, base_2))
+    else:
+        result = base_2 == base_1
     return result
 
 
-def seq_match(seq_1, seq_2, mismatches=0):
+def seq_match(seq_1, seq_2, mismatches=0, allow_ambiguity=False):
     if seq_1 == seq_2:
         return True
-    if len(seq_1) != len(seq_2):
-        return False
-    this_mismatches = 0
-
-    #this_mismatches = sum(map(base_match, seq_1, seq_2))
-    #for base_1, base_2 in zip(seq_1, seq_2):
-        #if not base_match(base_1, base_2):
-    for iii in xrange(len(seq_1)):
-        if not base_match(seq_1[iii], seq_2[iii]):
-            this_mismatches += 1
-        if this_mismatches > mismatches:
-            return False
-    return this_mismatches <= mismatches
+    if allow_ambiguity:
+        this_mismatches = 0
+        for iii in xrange(len(seq_1)):
+            if not base_match(seq_1[iii], seq_2[iii], allow_ambiguity=True):
+                this_mismatches += 1
+            if this_mismatches > mismatches:
+                return False
+        return this_mismatches <= mismatches
+    else:
+        for iii in xrange(len(seq_1)):
+            if seq_1[iii] != seq_2[iii]:
+                mismatches -= 1
+                if mismatches < 0:
+                    return False
+        return True
 
 
 def _percentile_from_counts(count_list, percentile):
