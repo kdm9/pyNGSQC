@@ -263,6 +263,29 @@ class FastqRandomAccess(FastqIO):
                 record_str += line
 
 
+class Process(mp.Process):
+    counter = 0
+
+    def __init__(self, task_queue, result_queue):
+        mp.Process.__init__(self)
+        self.task_queue = task_queue
+        self.result_queue = result_queue
+
+    def run(self):
+        while True:
+            next_task = self.task_queue.get()
+            if next_task is None:
+                # None is the Poison pill, means shutdown
+                self.task_queue.task_done()
+                break
+            self.counter += 1
+            #print '%s: %s' % (proc_name, next_task)
+            answer = next_task()
+            self.task_queue.task_done()
+            self.result_queue.put(answer)
+        return self.counter
+
+
 def base_match(base_1, base_2, allow_ambiguity=True):
     """
     base_match(base_1, base_2):
@@ -271,8 +294,6 @@ def base_match(base_1, base_2, allow_ambiguity=True):
     """
     if base_1 == base_2:
         return True
-    if len(base_1) != len(base_2):
-        return False
     ambiguity_dict = {
         "A": ["A", "W", "M", "R", "N", "D", "H", "V"],
         "C": ["C", "S", "M", "Y", "N", "B", "H", "V"],
@@ -308,29 +329,6 @@ def base_match(base_1, base_2, allow_ambiguity=True):
     except KeyError:
         raise ValueError("(%s, %s) is an invalid base pair" % (base_1, base_2))
     return result
-
-
-class Process(mp.Process):
-    counter = 0
-
-    def __init__(self, task_queue, result_queue):
-        mp.Process.__init__(self)
-        self.task_queue = task_queue
-        self.result_queue = result_queue
-
-    def run(self):
-        while True:
-            next_task = self.task_queue.get()
-            if next_task is None:
-                # None is the Poison pill, means shutdown
-                self.task_queue.task_done()
-                break
-            self.counter += 1
-            #print '%s: %s' % (proc_name, next_task)
-            answer = next_task()
-            self.task_queue.task_done()
-            self.result_queue.put(answer)
-        return self.counter
 
 
 def seq_match(seq_1, seq_2, mismatches=0):

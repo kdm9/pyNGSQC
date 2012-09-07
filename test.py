@@ -9,11 +9,12 @@ import csv
 import unittest
 #prefix = "E:/UniWork/BIOL3157/Assignments/2/"
 #prefix = "/home/kevin/UniWork/BIOL3157/Assignments/2/"
-#prefix = "/home/kevin/workspace/"
+prefix = "/home/kevin/workspace/"
 #prefix = "/var/ws/borevitz/"
-prefix = "/home/shashi/Desktop/workspace/pete_degrodome/PeteDegradomeRun1/"
-in_file = prefix + "small.fastq"  # "pel_huge.txt"  # "in.fastq"  # "big.fastq"
-out_dir = prefix + "test/"
+#"/home/shashi/Desktop/workspace/pete_degrodome/PeteDegradomeRun1/"
+#prefix = "/home/kevin/Programming/Bioinformatics/pyNGSQC/"
+in_file = prefix + "in.fastq"  # "pel_1.txt" "small.fastq"  "big.fastq"
+out_dir = "/home/kevin/test/"
 timer = time.time()
 
 
@@ -84,4 +85,5 @@ def suite():
     return suite
 
 if __name__ == "__main__":
-    unittest.TextTestRunner(verbosity=1).run(suite())
+    import profile
+    profile.run("unittest.TextTestRunner(verbosity=1).run(suite())")
