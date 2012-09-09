@@ -1,5 +1,6 @@
 import pyNGSQC
 from sys import stderr
+import paralellNGS
 
 
 class QualFilter(pyNGSQC.NGSQC):
@@ -88,3 +89,41 @@ class QualFilter(pyNGSQC.NGSQC):
                 self.writer.write(read)
         self.print_summary()
         return True
+
+    def run_paralell(self):
+        runner = paralellNGS.ParalellRunner(
+            QualFilterTask,
+            self.reader,
+            self.writer,
+            (
+                self.qual_threshold,
+                self.qual_offset,
+                self.min_length,
+                self.remove_trailing_Ns,
+                )
+            )
+        runner.run()
+        self.num_good_reads = runner.writer.num_reads
+        self.num_reads = runner.num_reads
+        self.print_summary()
+        return True
+
+
+class QualFilterTask(QualFilter):
+
+    def __init__(
+                 self,
+                 read,
+                 qual_threshold,
+                 qual_offset,
+                 min_length,
+                 remove_trailing_Ns,
+                ):
+        self.read = read
+        self.qual_threshold = qual_threshold
+        self.qual_offset = qual_offset
+        self.min_length = min_length
+        self.remove_trailing_Ns = remove_trailing_Ns
+
+    def __call__(self):
+        return self.filter_read(self.read)
