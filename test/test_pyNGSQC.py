@@ -7,7 +7,7 @@ import BarcodeSplitter as bcs
 import time
 import csv
 import unittest
-prefix = "/var/ws/"
+prefix = "./test/data/"
 in_file = prefix + "in.fastq"
 out_dir = prefix + "out/"
 timer = time.time()
