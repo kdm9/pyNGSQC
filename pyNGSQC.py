@@ -2,7 +2,6 @@ import gzip
 import bz2
 import os.path
 from array import array
-import multiprocessing as mp
 
 #TODO
 ## Make proper docstrings
@@ -164,7 +163,7 @@ class FastqIO(object):
 
 class FastqWriter(FastqIO):
     def __init__(self, file_name, compression=GUESS_COMPRESSION):
-        self.num_records = 0L
+        self.num_reads = 0L
         self.io = _GenericIO(
                               file_name,
                               mode=_GenericIO.WRITE,
@@ -173,7 +172,11 @@ class FastqWriter(FastqIO):
 
     def write(self, read):
         for line in read:
+            self.num_reads += 1
             self.io.write(line + "\n")
+
+    def close(self):
+        self.io.close()
 
 
 class FastqReader(FastqIO):
@@ -190,7 +193,7 @@ class FastqReader(FastqIO):
                               mode=_GenericIO.READ,
                               compression=compression
                             ).get()
-        self.num_records = 0L
+        self.num_reads = 0L
 
     def __iter__(self):
         return self
@@ -219,7 +222,7 @@ class FastqReader(FastqIO):
                     # Save space, remove duplicate headers
                     if this_read[0][1:] == this_read[0][2:]:
                         this_read[2] = "+"
-                self.num_records += 1
+                self.num_reads += 1
                 return this_read
         raise StopIteration
 
@@ -238,7 +241,7 @@ class FastqRandomAccess(FastqIO):
                               mode=_GenericIO.READ,
                               compression=compression
                             ).get()
-        self.num_records = 0L
+        self.num_reads = 0L
         self.record_positions = array("L")
         self._build_cache()
 
@@ -259,7 +262,7 @@ class FastqRandomAccess(FastqIO):
             # Save space, remove duplicate headers
             if this_read[0][1:] == this_read[0][2:]:
                 this_read[2] = "+"
-        self.num_records += 1
+        self.num_reads += 1
         return this_read
 
     def _build_cache(self):
@@ -279,29 +282,6 @@ class FastqRandomAccess(FastqIO):
                 record_str = line
             else:
                 record_str += line
-
-
-class Process(mp.Process):
-    counter = 0
-
-    def __init__(self, task_queue, result_queue):
-        mp.Process.__init__(self)
-        self.task_queue = task_queue
-        self.result_queue = result_queue
-
-    def run(self):
-        while True:
-            next_task = self.task_queue.get()
-            if next_task is None:
-                # None is the Poison pill, means shutdown
-                self.task_queue.task_done()
-                break
-            self.counter += 1
-            #print '%s: %s' % (proc_name, next_task)
-            answer = next_task()
-            self.task_queue.task_done()
-            self.result_queue.put(answer)
-        return self.counter
 
 
 def base_match(base_1, base_2, allow_ambiguity=True):
@@ -347,7 +327,7 @@ def _percentile_from_counts(count_list, percentile):
     """Returns the median value from a list whose values are counts of the
     index i
     """
-    # The index of the median, or of the lower of the two values if sum is even
+    #The index of the median, or of the lower of the two values if sum is even
     halfway_index = int(round(float(sum(count_list) * percentile))) - 1
     current_index = 0
     pos_within_value = 0  # Governs when we skip to the next median value
