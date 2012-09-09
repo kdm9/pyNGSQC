@@ -1,5 +1,3 @@
 *.pyc
 *~
-/test/data
-/test/data/barcodes.csv
-/test/data/small.fastq
+/test/data/*
