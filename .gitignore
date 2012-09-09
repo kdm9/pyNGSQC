@@ -1,6 +1,5 @@
 *.pyc
 *~
-/barcodes.csv
-/output.prof
-/output.txt
-/test*
+/test/data
+/test/data/barcodes.csv
+/test/data/small.fastq
