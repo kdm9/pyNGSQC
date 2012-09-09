@@ -1,3 +1,4 @@
+#Copyright 2012 Kevin Murray
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
@@ -42,7 +43,7 @@ class QualStats(pyNGSQC.NGSQC):
         self.num_reads = 0
         self.positions = []
 
-        # Set default dicts for the position_bases and position_qualities lists
+        #Set default dicts for the position_bases and position_qualities lists
         bases = list("AGCTN")
         self.columns = [
             "count",

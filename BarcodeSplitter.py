@@ -1,3 +1,4 @@
+#Copyright 2012 Kevin Murray
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
@@ -158,7 +159,7 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         self.verbose = verbose
         self.barcodes = {}
         self.barcode_counts = {}
-        # Note that files will be stored as a tuple of writers (pair_1, pair_2)
+        #Note that files will be stored as a tuple of writers (pair_1, pair_2)
         self.barcode_files = {}
         self.num_reads = 0
 

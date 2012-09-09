@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+#Copyright 2012 Kevin Murray
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
@@ -11,16 +13,16 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyNGSQC as ngs
-import QualFilter as qfil
-import QualStats as qstat
-import QualTrimmer as qtrim
-import HardTrimmer as htrim
-import BarcodeSplitter as bcs
+from pyNGSQC import pyNGSQC as ngs
+from pyNGSQC import QualFilter as qfil
+from pyNGSQC import QualStats as qstat
+from pyNGSQC import QualTrimmer as qtrim
+from pyNGSQC import HardTrimmer as htrim
+from pyNGSQC import BarcodeSplitter as bcs
 import time
 import csv
 import unittest
-prefix = "./test/data/"
+prefix = "./pyNGSQC/test/data/"
 in_file = prefix + "in.fastq"
 out_dir = prefix + "out/"
 timer = time.time()
@@ -65,7 +67,7 @@ class pyNGSQCtester(unittest.TestCase):
         self.assertEqual(retval, True)
 
     def testBarcodeSplitter(self):
-        bc = bcs.ParalellBarcodeSplitter(in_file, out_dir)
+        bc = bcs.BarcodeSplitter(in_file, out_dir)
         bc.set_barcodes_from_file(prefix + "barcodes.csv", csv.excel)
         retval = bc.run_paralell()
         print "testBarcodeSplitter took %.3f sec" % (time.time() - self.timer)
