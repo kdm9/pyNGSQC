@@ -1,4 +1,4 @@
 *.pyc
 *~
-/.ropeproject
-/test/data/*
+/.ropeproject/
+/test/data/
