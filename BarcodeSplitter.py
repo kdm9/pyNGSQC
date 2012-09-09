@@ -3,6 +3,8 @@ import pyNGSQC
 import csv
 from os import path
 from pyNGSQC import seq_match
+import paralellNGS
+
 FORWARD_ONLY = 0
 REVERSE_ONLY = 1
 FORWARD_OR_REVERSE = 2
@@ -41,20 +43,15 @@ class BarcodeSplitter(pyNGSQC.NGSQC):
         return csv_dialect
 
     def set_barcodes_from_file(self, file_name, csv_dialect=csv.excel):
-        """
-        """
         if csv_dialect == pyNGSQC.SNIFF_CSV_DIALECT:
             csv_dialect = self._sniff_csv_dialect(file_name)
         csv_fh = open(file_name, "rb")
         csv_reader = csv.reader(csv_fh, dialect=csv_dialect)
         for line in csv_reader:
             self.barcodes[line[0]] = "".join(line[1:])
-        #csv_reader.close()
         csv_fh.close()
 
     def set_barcodes_from_dict(self, barcodes):
-        """
-        """
         self.barcodes = barcodes
 
     def _get_barcode_writer(self, barcode):
@@ -121,6 +118,95 @@ class BarcodeSplitter(pyNGSQC.NGSQC):
         self.print_summary()
         return True
 
+    def run_paralell(self):
+        if len(self.barcodes) < 1:
+            raise ValueError(
+                "You must supply a barcode dict or file before" +
+                " run()-ing BarcodeSplitter"
+                )
+            return False
+        runner = paralellNGS.ParalellRunner(
+            BarcodeSplitTask,
+            self.reader,
+            BarcodeWriter(
+                self.barcodes,
+                self.in_file_name,
+                self.output_dir
+                ),
+            (self.barcodes,)
+            )
+        runner.run()
+        self.barcode_counts = runner.writer.barcode_counts
+        self.num_reads = runner.num_reads
+        self.print_summary()
+        return True
+
+
+class BarcodeSplitTask(pyNGSQC.NGSQC):
+
+    def __init__(self, read, barcodes):
+        self.read = read
+        self.barcodes = barcodes
+
+    def __call__(self):
+        for barcode in self.barcodes:
+            barcode_len = len(barcode)
+            read_barcode = self.read[1][0:barcode_len]
+            if seq_match(barcode, read_barcode, mismatches=1):
+                self.read[0] += " bcd:%s desc:%s" % (
+                    barcode,
+                    str(self.barcodes[barcode])
+                    )
+                self.read[1] = self.read[1][barcode_len:]
+                self.read[3] = self.read[3][barcode_len:]
+                return (barcode, self.read)
+        return (None, self.read)
+
+
+class BarcodeWriter(pyNGSQC.NGSQC):
+    """
+    """
+    def __init__(self, barcodes, in_file_name, output_dir=None):
+        self.in_file_name = in_file_name
+        self.output_dir = output_dir
+        self.barcodes = barcodes
+        self.barcode_counts = {}
+        self.barcode_files = {}
+
+    def _get_barcode_writer(self, barcode):
+        if self.barcodes[barcode] == "" or self.barcodes[barcode] is None:
+            identifier = barcode
+        else:
+            # Not sure if this is a good idea, is possibility of the
+            # barcode's decsription being non-unique
+            identifier = self.barcodes[barcode]
+        if self.output_dir is None:
+            dir_path = path.dirname(self.in_file_name)
+        else:
+            dir_path = self.output_dir
+        split_path = path.basename(self.in_file_name).split(".")
+        out_path = path.join(dir_path, split_path[0] + "_%s" % identifier)
+        if len(split_path) > 1:
+            # If the path had extensions, add them
+            out_path += "." + ".".join(split_path[1:])
+        writer = pyNGSQC.FastqWriter(out_path)
+        return writer
+
+    def write(self, pair):
+        barcode, read = pair
+        if barcode is not None:
+            if barcode not in self.barcode_files:
+                self.barcode_files[barcode] = \
+                 self._get_barcode_writer(barcode)
+            if barcode not in self.barcode_counts:
+                self.barcode_counts[barcode] = 0
+            self.barcode_counts[barcode] += 1
+            self.barcode_files[barcode].write(read)
+
+    def close(self):
+        for barcode in self.barcode_files:
+            self.barcode_files[barcode].close()
+
 
 class PairedBarcodeSplitter(BarcodeSplitter):
     def __init__(
@@ -145,7 +231,7 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         self.verbose = verbose
         self.barcodes = {}
         self.barcode_counts = {}
-        # Note that files will be stored as a tuple of writers (pair_1, pair_2)
+        #Note that files will be stored as a tuple of writers (pair_1, pair_2)
         self.barcode_files = {}
         self.num_reads = 0
 

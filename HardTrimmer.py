@@ -1,10 +1,10 @@
 from sys import stderr
+import paralellNGS
 import pyNGSQC
 
 
 class HardTrimmer(pyNGSQC.NGSQC):
-    """
-    """
+
     def __init__(
                  self,
                  in_file_name,
@@ -47,3 +47,25 @@ class HardTrimmer(pyNGSQC.NGSQC):
                 self.writer.write(read)
         self.print_summary()
         return True
+
+    def run_paralell(self):
+        runner = paralellNGS.ParalellRunner(
+            HardTrimmerTask,
+            self.reader,
+            self.writer,
+            (self.length,)
+            )
+        runner.run()
+        self.num_reads = runner.num_reads
+        self.print_summary()
+        return True
+
+
+class HardTrimmerTask(HardTrimmer):
+
+    def __init__(self, read, length):
+        self.read = read
+        self.length = length
+
+    def __call__(self):
+        return self.trim_read(self.read)
