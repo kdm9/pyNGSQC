@@ -1,8 +1,4 @@
 *.pyc
 *~
-<<<<<<< HEAD
-/test/data/*
-=======
 /.ropeproject/
 /test/data/
->>>>>>> 9f85e8e... Fixed gitignore, removed some wildcards.
