@@ -13,6 +13,7 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyNGSQC
+import paralellNGS
 import sys
 from tempfile import NamedTemporaryFile as namedtmp
 import os
@@ -22,14 +23,14 @@ class Collapser(pyNGSQC.NGSQC):
     #MAX_FILE_SIZE = 2 << 30  # 2GB
 
     def __init__(
-                 self,
-                 in_file_name,
-                 out_file_name,
-                 key_length=6,
-                 tmp_dir=None,
-                 compression=pyNGSQC.GUESS_COMPRESSION,
-                 verbose=False
-                ):
+            self,
+            in_file_name,
+            out_file_name,
+            key_length=6,
+            tmp_dir=None,
+            compression=pyNGSQC.GUESS_COMPRESSION,
+            verbose=False
+            ):
         self.in_file_name = in_file_name
         self.out_file_name = out_file_name
         self.reader = pyNGSQC.FastqReader(
@@ -83,7 +84,7 @@ class Collapser(pyNGSQC.NGSQC):
         read.append(read_tuple[2])
         return read
 
-    def _sort(self):
+    def _colapse(self):
         sorted_writer = pyNGSQC.FastqWriter(self.out_file_name)
         for key in sorted(self.keys):
             these_reads = []
@@ -105,8 +106,8 @@ class Collapser(pyNGSQC.NGSQC):
                     sorted_writer.write(self._tuple_to_read(read_tuple))
                 else:
                     self.num_non_unique_reads += 1
-        for filename in self.tmp_file_names:
-            os.remove(filename)
+        for file_name in self.tmp_file_names:
+            os.remove(file_name)
 
     def print_summary(self):
         sys.stderr.write("Collapser finished\n")
@@ -117,6 +118,60 @@ class Collapser(pyNGSQC.NGSQC):
 
     def run(self):
         self._split_files()
+        self._colapse()
+        self.print_summary()
+        return True
+
+    def run_paralell(self):
+        # We don't bother paralellising spliting of files, as it is mostly IO,
+        # so would be faily pointless
+        self._split_files()
+
+        sorted_writer = pyNGSQC.FastqWriter(self.out_file_name)
+        files = pyNGSQC.dict_to_tuples(self.tmp_file_names)
+        runner = paralellNGS.ParalellRunner(
+            CollapserTask,
+            files,
+            sorted_writer
+            )
+        runner.run()
+        self.barcode_counts = runner.writer.barcode_counts
+        self.num_reads = runner.num_reads
+        self.print_summary()
+        return True
         self._sort()
         self.print_summary()
         return True
+
+
+class CollapserTask(Collapser):
+
+    def __init__(self, file_tuple):
+        self.file_tuple = file_tuple
+        self.num_reads = 0L
+        self.num_non_unique_reads = 0
+        self.num_unique_reads = 0
+
+    def call(self):
+        key, file_name = self.file_tuple
+        these_reads = []
+        these_unique_reads = []
+
+        reader = pyNGSQC.FastqReader(file_name)
+        for read in reader:
+            these_reads.append(self._read_to_tuple(read))
+        these_reads.sort()
+        self.num_reads += reader.num_reads
+        reader.close()
+
+        last_read_seq = ""
+        for read_tuple in these_reads:
+
+            if read_tuple[0] != last_read_seq:
+                last_read_seq = read_tuple[0]
+                self.num_unique_reads += 1
+                for line in self._tuple_to_read(read_tuple):
+                    these_unique_reads.append(line)
+            else:
+                self.num_non_unique_reads += 1
+        os.remove(file_name)
