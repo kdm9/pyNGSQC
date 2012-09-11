@@ -14,6 +14,7 @@
 
 from sys import stderr
 import pyNGSQC
+import paralellNGS
 
 
 class QualTrimmer(pyNGSQC.NGSQC):
@@ -58,7 +59,6 @@ class QualTrimmer(pyNGSQC.NGSQC):
         if len(read[1]) < self.min_length:
             return None
         else:
-
             return read
 
     def print_summary(self):
@@ -83,3 +83,41 @@ class QualTrimmer(pyNGSQC.NGSQC):
                 self.num_bad_reads += 1
         self.print_summary()
         return True
+
+    def run_paralell(self):
+        runner = paralellNGS.ParalellRunner(
+            QualTrimmerTask,
+            self.reader,
+            self.writer,
+            (
+                self.qual_threshold,
+                self.qual_offset,
+                self.min_length,
+                self.remove_trailing_Ns,
+                )
+            )
+        runner.run()
+        self.num_good_reads = runner.writer.num_reads
+        self.num_reads = runner.num_reads
+        self.print_summary()
+        return True
+
+
+class QualTrimmerTask(QualTrimmer):
+
+    def __init__(
+                 self,
+                 read,
+                 qual_threshold,
+                 qual_offset,
+                 min_length,
+                 remove_trailing_Ns,
+                ):
+        self.read = read
+        self.qual_threshold = qual_threshold
+        self.qual_offset = qual_offset
+        self.min_length = min_length
+        self.remove_trailing_Ns = remove_trailing_Ns
+
+    def __call__(self):
+        return self.trim_read(self.read)

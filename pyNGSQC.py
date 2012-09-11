@@ -240,6 +240,9 @@ class FastqReader(FastqIO):
                 return this_read
         raise StopIteration
 
+    def close(self):
+        self.io.close()
+
 
 class FastqRandomAccess(FastqIO):
     def __init__(
@@ -296,6 +299,9 @@ class FastqRandomAccess(FastqIO):
                 record_str = line
             else:
                 record_str += line
+
+    def close(self):
+        self.io.close()
 
 
 def base_match(base_1, base_2, allow_ambiguity=True):
