@@ -15,6 +15,7 @@
 import pyNGSQC
 import sys
 from tempfile import NamedTemporaryFile as namedtmp
+import os
 
 
 class Collapser(pyNGSQC.NGSQC):
@@ -25,6 +26,7 @@ class Collapser(pyNGSQC.NGSQC):
                  in_file_name,
                  out_file_name,
                  key_length=6,
+                 tmp_dir=None,
                  compression=pyNGSQC.GUESS_COMPRESSION,
                  verbose=False
                 ):
@@ -34,6 +36,7 @@ class Collapser(pyNGSQC.NGSQC):
             self.in_file_name,
             compression=compression
             )
+        self.tmp_dir = tmp_dir
         self.verbose = verbose
         self.key_length = key_length
         self.keys = []
@@ -53,6 +56,7 @@ class Collapser(pyNGSQC.NGSQC):
                 # If in keys, file handle should exist
                 sub_file_handles[key] = namedtmp(
                     mode="wb",
+                    dir=self.tmp_dir,
                     prefix=key + "_",
                     delete=False
                     )
