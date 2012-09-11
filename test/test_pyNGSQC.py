@@ -19,6 +19,7 @@ from pyNGSQC import QualStats as qstat
 from pyNGSQC import QualTrimmer as qtrim
 from pyNGSQC import HardTrimmer as htrim
 from pyNGSQC import BarcodeSplitter as bcs
+from pyNGSQC import Collapser as col
 import time
 import csv
 import unittest
@@ -50,6 +51,16 @@ class pyNGSQCtester(unittest.TestCase):
             )
         retval = qf.run_paralell()
         print "testQualFilter took %.3f sec" % (time.time() - self.timer)
+        self.timer = time.time()
+        self.assertEqual(retval, True)
+
+    def testCollapser(self):
+        co = col.Collapser(
+            in_file,
+            out_dir + "col.fastq",
+            )
+        retval = co.run()
+        print "testCollapser took %.3f sec" % (time.time() - self.timer)
         self.timer = time.time()
         self.assertEqual(retval, True)
 
