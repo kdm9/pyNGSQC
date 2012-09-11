@@ -105,16 +105,18 @@ class QualFilter(pyNGSQC.NGSQC):
         return True
 
     def run_paralell(self):
+        task_args = (
+            self.pass_rate,
+            self.qual_threshold,
+            self.qual_offset,
+            self.max_Ns
+            )
+
         runner = paralellNGS.ParalellRunner(
             QualFilterTask,
             self.reader,
             self.writer,
-            (
-                self.qual_threshold,
-                self.qual_offset,
-                self.min_length,
-                self.remove_trailing_Ns,
-                )
+            task_args
             )
         runner.run()
         self.num_good_reads = runner.writer.num_reads
@@ -129,15 +131,15 @@ class QualFilterTask(QualFilter):
                  self,
                  read,
                  qual_threshold,
+                 pass_rate,
+                 max_Ns,
                  qual_offset,
-                 min_length,
-                 remove_trailing_Ns,
                 ):
         self.read = read
+        self.pass_rate = float(pass_rate)
         self.qual_threshold = qual_threshold
         self.qual_offset = qual_offset
-        self.min_length = min_length
-        self.remove_trailing_Ns = remove_trailing_Ns
+        self.max_Ns = max_Ns
 
     def __call__(self):
         return self.filter_read(self.read)
