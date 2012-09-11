@@ -184,10 +184,17 @@ class FastqWriter(FastqIO):
                               compression=compression
                             ).get()
 
-    def write(self, read):
-        for line in read:
-            self.num_reads += 1
-            self.io.write(line + "\n")
+    def write(self, reads):
+        if len(reads) == 4:
+            for line in reads:
+                self.num_reads += 1
+                self.io.write(line + "\n")
+        elif len(reads) % 4 == 0:
+            self.num_reads += len(reads) / 4
+            for line in reads:
+                self.io.write(line + "\n")
+        else:
+            raise ValueError("Bad Read: %s" % repr(reads))
 
     def close(self):
         self.io.close()
@@ -384,3 +391,17 @@ def _whiskers_from_counts(count_list):
     left_whisker = median - 1.5 * iqr
     right_whisker = median + 1.5 * iqr
     return (left_whisker, right_whisker)
+
+
+def dict_to_tuples(this_dict):
+    tuples = []
+    for key, value in this_dict:
+        tuples.append((key, value))
+    return tuples
+
+
+def tuples_to_dict(tuples):
+    this_dict = {}
+    for key, value in tuples:
+        this_dict[key] = value
+    return this_dict
