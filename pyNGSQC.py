@@ -1,4 +1,3 @@
-#Copyright 2012 Kevin Murray
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
@@ -240,6 +239,9 @@ class FastqReader(FastqIO):
                 return this_read
         raise StopIteration
 
+    def close(self):
+        self.io.close()
+
 
 class FastqRandomAccess(FastqIO):
     def __init__(
@@ -296,6 +298,9 @@ class FastqRandomAccess(FastqIO):
                 record_str = line
             else:
                 record_str += line
+
+    def close(self):
+        self.io.close()
 
 
 def base_match(base_1, base_2, allow_ambiguity=True):
