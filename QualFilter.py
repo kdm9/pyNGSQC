@@ -72,7 +72,7 @@ class QualFilter(pyNGSQC.NGSQC):
         else:
             return True
 
-    def filter_read(self, read):
+    def _passes_qc(self, read):
         if self.max_Ns != -1 and \
          int(self._num_Ns_in_read(read)) > self.max_Ns:
             self.num_bad_reads += 1
@@ -88,20 +88,27 @@ class QualFilter(pyNGSQC.NGSQC):
         stderr.write("QC check finished:\n")
         stderr.write("Processed %i reads\n" % self.num_reads)
         stderr.write(
-                "\t%i sequences passed QC, wrote them to %s\n" %
-                (self.num_good_reads, self.out_file_name)
+            "\t%i sequences passed QC, wrote them to %s\n" %
+            (self.num_good_reads, self.out_file_name)
             )
         stderr.write(
-                      "\t%i sequences failed QC, and were ignored\n" %
-                      self.num_bad_reads,
-                    )
+            "\t%i sequences failed QC, and were ignored\n" %
+            self.num_bad_reads,
+            )
+
+    def filter_read(self, read):
+        if self._passes_qc(read):
+            return read
+        else:
+            return None
 
     def run(self):
         for read in self.reader:
-            self.num_reads += 1
             if self.filter_read(read):
                 self.writer.write(read)
+        self.num_reads += self.reader.num_reads
         self.print_summary()
+        self.reader.close()
         return True
 
     def run_paralell(self):
@@ -140,6 +147,9 @@ class QualFilterTask(QualFilter):
         self.qual_threshold = qual_threshold
         self.qual_offset = qual_offset
         self.max_Ns = max_Ns
+        self.num_reads = 0
+        self.num_good_reads = 0
+        self.num_bad_reads = 0
 
     def __call__(self):
         return self.filter_read(self.read)
