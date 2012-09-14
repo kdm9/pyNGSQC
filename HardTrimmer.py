@@ -17,7 +17,7 @@ import paralellNGS
 import pyNGSQC
 
 
-class HardTrimmer(pyNGSQC.NGSQC):
+class HardTrimmer(pyNGSQC.Base):
 
     def __init__(
                  self,

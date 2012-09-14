@@ -22,7 +22,7 @@ class _ReadTask():
         super(_ReadTask, self).__init__()
 
 
-class QualStats(pyNGSQC.NGSQC):
+class QualStats(pyNGSQC.Base):
     def __init__(
                  self,
                  in_file_name,
@@ -76,10 +76,13 @@ class QualStats(pyNGSQC.NGSQC):
 
     def _print_summary(self):
         self._summarize_data()
-        print "\t".join(self.columns)
+        print
+        print "cycle\t", "\t".join(self.columns)
+        cycle = 0
         for position in self.positions:
+            cycle += 1
             values = [str(position["summary"][col]) for col in self.columns]
-            print "\t".join(values)
+            print "%i\t" % cycle, "\t".join(values)
 
     def _summarize_data(self):
         for position in self.positions:
@@ -96,15 +99,15 @@ class QualStats(pyNGSQC.NGSQC):
             position["summary"]["mean"] = position["summary"]["sum"] / \
              position["summary"]["count"]
             # Quartiles, median, iqr and whiskers
-            position["summary"]["Q1"] = pyNGSQC._percentile_from_counts(
+            position["summary"]["Q1"] = pyNGSQC.percentile_from_counts(
                 position["scores"],
                 0.25
                 )
-            position["summary"]["median"] = pyNGSQC._percentile_from_counts(
+            position["summary"]["median"] = pyNGSQC.percentile_from_counts(
                 position["scores"],
                 0.5
                 )
-            position["summary"]["Q3"] = pyNGSQC._percentile_from_counts(
+            position["summary"]["Q3"] = pyNGSQC.percentile_from_counts(
                 position["scores"],
                 0.75
                 )
@@ -112,7 +115,7 @@ class QualStats(pyNGSQC.NGSQC):
              position["summary"]["Q1"]
 
             (position["summary"]["lW"], position["summary"]["rW"]) = \
-             pyNGSQC._whiskers_from_counts(position["scores"])
+             pyNGSQC.whiskers_from_counts(position["scores"])
 
             # Calculate Base Counts
             total_count = 0

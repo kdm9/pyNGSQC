@@ -19,14 +19,14 @@ from tempfile import NamedTemporaryFile as namedtmp
 import os
 
 
-class Collapser(pyNGSQC.NGSQC):
+class Collapser(pyNGSQC.Base):
     #MAX_FILE_SIZE = 2 << 30  # 2GB
 
     def __init__(
             self,
             in_file_name,
             out_file_name,
-            key_length=6,
+            key_length=5,
             tmp_dir=None,
             compression=pyNGSQC.GUESS_COMPRESSION,
             verbose=False
@@ -45,33 +45,37 @@ class Collapser(pyNGSQC.NGSQC):
         self.num_non_unique_reads = 0
         self.num_unique_reads = 0
         self.tmp_file_names = {}
+        self.file_sizes = {}
 
     def _split_files(self):
-        file_sizes = {}
-        sub_file_handles = {}
+
         for read in self.reader:
             key = read[1][:self.key_length]
             # None means guess tmp dir
-            if key not in self.keys:
+            if key in self.tmp_file_names:
+                fh = open(self.tmp_file_names[key], "ab")
+            else:
                 self.keys.append(key)
                 # If in keys, file handle should exist
-                sub_file_handles[key] = namedtmp(
+                fh = namedtmp(
                     mode="wb",
                     dir=self.tmp_dir,
                     prefix=key + "_",
                     delete=False
                     )
-                file_name = sub_file_handles[key].name
+                file_name = fh.name
                 self.tmp_file_names[key] = file_name
             read_str = "\n".join(read)
-            sub_file_handles[key].write(read_str + "\n")
+            fh.write(read_str + "\n")
+            fh.close()
 
         # get file size
-        for key in self.keys:
-            sub_file_handles[key].seek(0, 2)
-            this_file_size = sub_file_handles[key].tell()
-            file_sizes[key] = this_file_size
-            sub_file_handles[key].close
+        for key in self.tmp_file_names:
+            fh = open(self.tmp_file_names[key], "rb")
+            fh.seek(0, 2)
+            this_file_size = fh.tell()
+            self.file_sizes[key] = this_file_size
+            fh.close
 
     def _read_to_tuple(self, read):
         return (read[1], read[0], read[3], read[2])
@@ -106,19 +110,23 @@ class Collapser(pyNGSQC.NGSQC):
                     sorted_writer.write(self._tuple_to_read(read_tuple))
                 else:
                     self.num_non_unique_reads += 1
-        for file_name in self.tmp_file_names:
+        for file_name in self.tmp_file_names.values():
             os.remove(file_name)
 
     def print_summary(self):
         sys.stderr.write("Collapser finished\n")
         sys.stderr.write("\tAnalysed %i reads\n" % self.num_reads)
         sys.stderr.write("\tFound %i unique reads\n" % self.num_unique_reads)
-        sys.stderr.write("\tRemoved %i non-unique reads\n" % \
+        sys.stderr.write("\tRemoved %i non-unique reads\n" %
          self.num_non_unique_reads)
 
     def run(self):
         self._split_files()
+        print "Files Split, sizes:"
+        for key, size in self.file_sizes:
+            print "\t%s %r" % (key, size)
         self._colapse()
+        print "collapsed"
         self.print_summary()
         return True
 

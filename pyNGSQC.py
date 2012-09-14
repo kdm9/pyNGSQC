@@ -59,7 +59,7 @@ AMBIGUITY_DICT = {
     }
 
 
-class NGSQC(object):
+class Base(object):
     def __init__(self, in_file_name, out_file_name, qual_offset=64,
                   append=False, compression=GUESS_COMPRESSION):
         self.in_file_name = in_file_name
@@ -108,7 +108,7 @@ class NGSQC(object):
         self.out_file.close()
 
 
-class _GenericIO(object):
+class _GenericFileHandle(object):
     READ = 0
     WRITE = 1
     #APPEND = 2 # APPEND NOT SUPPORTED YET
@@ -170,19 +170,30 @@ class _GenericIO(object):
             return bz2.BZ2File(self.file_name, "w")
 
 
-class FastqIO(object):
-    def __del__(self):
+class _IOObject(object):
+
+    def __init__(self):
+        pass
+
+    def close(self):
         self.io.close()
 
 
-class FastqWriter(FastqIO):
+class _Writer(_IOObject):
+
     def __init__(self, file_name, compression=GUESS_COMPRESSION):
         self.num_reads = 0L
-        self.io = _GenericIO(
-                              file_name,
-                              mode=_GenericIO.WRITE,
-                              compression=compression
-                            ).get()
+        self.io = _GenericFileHandle(
+            file_name,
+            mode=_GenericFileHandle.WRITE,
+            compression=compression
+            ).get()
+
+
+class FastqWriter(_Writer):
+
+    def __init__(self, file_name, compression=GUESS_COMPRESSION):
+        super(FastqWriter, self).__init__(file_name, compression)
 
     def write(self, reads):
         if len(reads) == 4:
@@ -194,30 +205,60 @@ class FastqWriter(FastqIO):
             for line in reads:
                 self.io.write(line + "\n")
         else:
-            raise ValueError("Bad Read: %s" % repr(reads))
-
-    def close(self):
-        self.io.close()
+            raise ValueError("Bad Fastq Read: %s" % repr(reads))
 
 
-class FastqReader(FastqIO):
+class FastaWriter(_Writer):
+    def __init__(self, file_name, compression=GUESS_COMPRESSION):
+        super(FastaWriter, self).__init__(file_name, compression)
+
+    def write(self, reads):
+        if len(reads) == 2:
+            for line in reads:
+                self.num_reads += 1
+                self.io.write(line + "\n")
+        elif len(reads) % 2 == 0:
+            self.num_reads += len(reads) / 2
+            for line in reads:
+                self.io.write(line + "\n")
+        else:
+            raise ValueError("Bad Fasta Read: %s" % repr(reads))
+
+
+class _Reader(_IOObject):
+
     def __init__(
-                  self,
-                  file_name,
-                  deduplicate_header=True,
-                  compression=GUESS_COMPRESSION
-                ):
+            self,
+            file_name,
+            deduplicate_header=True,
+            compression=GUESS_COMPRESSION
+            ):
         self.file_name = file_name
         self.deduplicate_header = deduplicate_header
-        self.io = _GenericIO(
+        self.io = _GenericFileHandle(
                               self.file_name,
-                              mode=_GenericIO.READ,
+                              mode=_GenericFileHandle.READ,
                               compression=compression
                             ).get()
         self.num_reads = 0L
 
     def __iter__(self):
         return self
+
+
+class FastqReader(_Reader):
+
+    def __init__(
+            self,
+            file_name,
+            deduplicate_header=True,
+            compression=GUESS_COMPRESSION
+            ):
+        super(FastqReader, self).__init__(
+            file_name,
+            deduplicate_header,
+            compression
+            )
 
     def next(self):
         this_read = []
@@ -247,25 +288,20 @@ class FastqReader(FastqIO):
                 return this_read
         raise StopIteration
 
-    def close(self):
-        self.io.close()
 
+class FastqRandomAccess(_Reader):
 
-class FastqRandomAccess(FastqIO):
     def __init__(
-                  self,
-                  file_name,
-                  deduplicate_header=True,
-                  compression=GUESS_COMPRESSION
-                ):
-        self.file_name = file_name
-        self.deduplicate_header = deduplicate_header
-        self.io = _GenericIO(
-                              self.file_name,
-                              mode=_GenericIO.READ,
-                              compression=compression
-                            ).get()
-        self.num_reads = 0L
+            self,
+            file_name,
+            deduplicate_header=True,
+            compression=GUESS_COMPRESSION
+            ):
+        super(FastqReader, self).__init__(
+            file_name,
+            deduplicate_header,
+            compression
+            )
         self.record_positions = array("L")
         self._build_cache()
 
@@ -307,9 +343,6 @@ class FastqRandomAccess(FastqIO):
             else:
                 record_str += line
 
-    def close(self):
-        self.io.close()
-
 
 def base_match(base_1, base_2, allow_ambiguity=True):
     """
@@ -323,7 +356,7 @@ def base_match(base_1, base_2, allow_ambiguity=True):
         try:
             result = base_2 in AMBIGUITY_DICT[base_1]
         except KeyError:
-            raise ValueError("(%s, %s) is an invalid base pair" % \
+            raise ValueError("(%s, %s) is an invalid base pair" %
              (base_1, base_2))
     else:
         result = base_2 == base_1
@@ -350,7 +383,7 @@ def seq_match(seq_1, seq_2, mismatches=0, allow_ambiguity=False):
         return True
 
 
-def _percentile_from_counts(count_list, percentile):
+def percentile_from_counts(count_list, percentile):
     """Returns the median value from a list whose values are counts of the
     index i
     """
@@ -383,10 +416,10 @@ def _percentile_from_counts(count_list, percentile):
     return float(median)
 
 
-def _whiskers_from_counts(count_list):
-    q1 = _percentile_from_counts(count_list, 0.25)
-    q3 = _percentile_from_counts(count_list, 0.75)
-    median = _percentile_from_counts(count_list, 0.5)
+def whiskers_from_counts(count_list):
+    q1 = percentile_from_counts(count_list, 0.25)
+    q3 = percentile_from_counts(count_list, 0.75)
+    median = percentile_from_counts(count_list, 0.5)
     iqr = q3 - q1
     left_whisker = median - 1.5 * iqr
     right_whisker = median + 1.5 * iqr

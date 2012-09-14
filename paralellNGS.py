@@ -48,7 +48,7 @@ class WriterProcess(mp.Process):
     def run(self):
         while True:
             result = self.queue.get()
-            if result == None:
+            if result is None:
                 # None is the Poison pill, means shutdown
                 self.writer.close()
                 self.queue.task_done()

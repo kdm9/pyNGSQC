@@ -24,7 +24,7 @@ REVERSE_ONLY = 1
 FORWARD_OR_REVERSE = 2
 
 
-class BarcodeSplitter(pyNGSQC.NGSQC):
+class BarcodeSplitter(pyNGSQC.Base):
     def __init__(
             self,
             in_file_name,
@@ -156,7 +156,7 @@ class BarcodeSplitter(pyNGSQC.NGSQC):
         return True
 
 
-class BarcodeSplitTask(pyNGSQC.NGSQC):
+class BarcodeSplitTask(pyNGSQC.Base):
 
     def __init__(self, read, barcodes):
         self.read = read
@@ -177,7 +177,7 @@ class BarcodeSplitTask(pyNGSQC.NGSQC):
         return (None, self.read)
 
 
-class BarcodeWriter(pyNGSQC.NGSQC):
+class BarcodeWriter(pyNGSQC.Base):
     """
     """
     def __init__(self, barcodes, in_file_name, output_dir=None):

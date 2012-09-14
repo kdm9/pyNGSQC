@@ -17,7 +17,7 @@ import pyNGSQC
 import paralellNGS
 
 
-class QualTrimmer(pyNGSQC.NGSQC):
+class QualTrimmer(pyNGSQC.Base):
     def __init__(
                  self,
                  in_file_name,

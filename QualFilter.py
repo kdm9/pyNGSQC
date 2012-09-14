@@ -17,7 +17,7 @@ from sys import stderr
 import paralellNGS
 
 
-class QualFilter(pyNGSQC.NGSQC):
+class QualFilter(pyNGSQC.Base):
     """
     Usage:
         QualityFilter(in_file_name, out_file_name, qual_threshold=15,
