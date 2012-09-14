@@ -20,6 +20,8 @@ from pyNGSQC import QualTrimmer as qtrim
 from pyNGSQC import HardTrimmer as htrim
 from pyNGSQC import BarcodeSplitter as bcs
 from pyNGSQC import Collapser as col
+from pyNGSQC import Converter as conv
+
 import time
 import csv
 import unittest
@@ -49,7 +51,8 @@ class pyNGSQCtester(unittest.TestCase):
             qual_threshold=20,
             qual_offset=33
             )
-        retval = qf.run_paralell()
+        retval = qf.run()
+        #retval = qf.run_paralell()
         print "testQualFilter took %.3f sec" % (time.time() - self.timer)
         self.timer = time.time()
         self.assertEqual(retval, True)
@@ -72,7 +75,8 @@ class pyNGSQCtester(unittest.TestCase):
             min_length=10,
             qual_offset=33
             )
-        retval = qt.run_paralell()
+        retval = qt.run()
+        #retval = qt.run_paralell()
         print "testQualTrimmer took %.3f sec" % (time.time() - self.timer)
         self.timer = time.time()
         self.assertEqual(retval, True)
@@ -80,14 +84,16 @@ class pyNGSQCtester(unittest.TestCase):
     def testBarcodeSplitter(self):
         bc = bcs.BarcodeSplitter(in_file, out_dir)
         bc.set_barcodes_from_file(prefix + "barcodes.csv", csv.excel)
-        retval = bc.run_paralell()
+        retval = bc.run()
+        #retval = bc.run_paralell()
         print "testBarcodeSplitter took %.3f sec" % (time.time() - self.timer)
         self.timer = time.time()
         self.assertEqual(retval, True)
 
     def testHardTrimmer(self):
         ht = htrim.HardTrimmer(in_file, out_dir + "ht.fastq", length=30)
-        retval = ht.run_paralell()
+        retval = ht.run()
+        #retval = ht.run_paralell()
         print "testHardTrimmer took %.3f sec" % (time.time() - self.timer)
         self.timer = time.time()
         self.assertEqual(retval, True)
@@ -96,6 +102,13 @@ class pyNGSQCtester(unittest.TestCase):
         qs = qstat.QualStats(in_file, qual_offset=33)
         retval = qs.run()
         print "testQualStats took %.3f sec" % (time.time() - self.timer)
+        self.timer = time.time()
+        self.assertEqual(retval, True)
+
+    def testFastqToFasta(self):
+        ftf = conv.FastqToFasta(in_file, out_dir + "fasta.fasta")
+        retval = ftf.run()
+        print "testFastqToFasta took %.3f sec" % (time.time() - self.timer)
         self.timer = time.time()
         self.assertEqual(retval, True)
 
