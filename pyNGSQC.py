@@ -137,9 +137,9 @@ class _GenericFileHandle(object):
             self.compression = compression
         else:
             raise ValueError(
-                             "%i is not a valid compression mode" %
-                              compression
-                            )
+                "%i is not a valid compression mode" %
+                compression
+                )
 
     def _guess_compression(self, file_name):
         path, ext = os.path.splitext(file_name)
@@ -247,10 +247,10 @@ class _Reader(_IOObject):
         self.file_name = file_name
         self.deduplicate_header = deduplicate_header
         self.io = _GenericFileHandle(
-                              self.file_name,
-                              mode=_GenericFileHandle.READ,
-                              compression=compression
-                            ).get()
+            self.file_name,
+            mode=_GenericFileHandle.READ,
+            compression=compression
+            ).get()
         self.num_reads = 0L
 
     def __iter__(self):
