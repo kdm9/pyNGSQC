@@ -18,28 +18,23 @@ import pyNGSQC
 
 
 class HardTrimmer(pyNGSQC.Base):
-
+    """
+    """
     def __init__(
-                 self,
-                 in_file_name,
-                 out_file_name,
-                 length=15,
-                 verbose=False,
-                 compression=pyNGSQC.GUESS_COMPRESSION
-                ):
-        self.in_file_name = in_file_name
-        self.out_file_name = out_file_name
-        self.reader = pyNGSQC.FastqReader(
-                                           self.in_file_name,
-                                           compression=compression
-                                         )
-        self.writer = pyNGSQC.FastqWriter(
-                                           self.out_file_name,
-                                           compression=compression
-                                          )
-        self.verbose = verbose
+            self,
+            in_file_name,
+            out_file_name,
+            length=15,
+            verbose=False,
+            compression=pyNGSQC.GUESS_COMPRESSION
+            ):
+        super(HardTrimmer, self).__init__(
+            in_file_name,
+            out_file_name,
+            verbose=verbose,
+            compression=compression
+            )
         self.length = length
-        self.num_reads = 0
 
     def trim_read(self, read):
         read[1] = read[1][:self.length]  # Base
@@ -49,9 +44,9 @@ class HardTrimmer(pyNGSQC.Base):
     def print_summary(self):
         stderr.write("HardTrimmer finished:\n")
         stderr.write(
-                      "\t%i sequences were trimmed to %i wrote them to %s\n" %
-                      (self.num_reads, self.length, self.out_file_name)
-                    )
+            "\t%i sequences were trimmed to %i wrote them to %s\n" %
+            (self.num_reads, self.length, self.out_file_name)
+            )
 
     def run(self):
         for read in self.reader:

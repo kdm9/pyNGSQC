@@ -16,34 +16,42 @@ import pyNGSQC
 from copy import deepcopy
 
 
-class _ReadTask():
+class _QualStatsTask():
 
     def __init__(self):
-        super(_ReadTask, self).__init__()
+        super(_QualStatsTask, self).__init__()
 
 
-class QualStats(pyNGSQC.Base):
+class QualStats(pyNGSQC.QualBase):
+
     def __init__(
-                 self,
-                 in_file_name,
-                 qual_offset=64,
-                 min_length=15,
-                 verbose=False,
-                 output=pyNGSQC.STDOUT,
-                 compression=pyNGSQC.GUESS_COMPRESSION
-                ):
-        self.in_file_name = in_file_name
+            self,
+            # Inherited args
+            in_file_name,
+            out_file_name,
+            # Local args
+            # Inherited kwargs
+            qual_offset=pyNGSQC.DEFAULT_OFFSET,
+            compression=pyNGSQC.GUESS_COMPRESSION,
+            deduplicate_header=True,
+            verbose=False,
+            # Local kwargs
+            output=pyNGSQC.STDOUT
+            ):
+        # Initialise base class
+        super(QualStats, self).__init__(
+            in_file_name,
+            out_file_name,
+            qual_offset=qual_offset,
+            compression=compression,
+            deduplicate_header=deduplicate_header,
+            verbose=verbose
+            )
+        # Initialise local variables
         self.output = output
-        self.reader = pyNGSQC.FastqReader(
-                                           self.in_file_name,
-                                           compression=compression
-                                         )
-        self.qual_offset = qual_offset
-        self.min_length = min_length
-        self.num_reads = 0
         self.positions = []
 
-        #Set default dicts for the position_bases and position_qualities lists
+        # Set default dicts for the position_bases and position_qualities lists
         bases = list("AGCTN")
         self.columns = [
             "count",

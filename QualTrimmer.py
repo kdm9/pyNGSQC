@@ -17,34 +17,37 @@ import pyNGSQC
 import paralellNGS
 
 
-class QualTrimmer(pyNGSQC.Base):
+class QualTrimmer(pyNGSQC.QualBase):
+
     def __init__(
-                 self,
-                 in_file_name,
-                 out_file_name,
-                 qual_threshold=20,
-                 qual_offset=64,
-                 min_length=15,
-                 remove_trailing_Ns=False,
-                 compression=pyNGSQC.GUESS_COMPRESSION
-                ):
-        self.in_file_name = in_file_name
-        self.out_file_name = out_file_name
-        self.reader = pyNGSQC.FastqReader(
-                                           self.in_file_name,
-                                           compression=compression
-                                         )
-        self.writer = pyNGSQC.FastqWriter(
-                                           self.out_file_name,
-                                           compression=compression
-                                         )
-        self.qual_threshold = qual_threshold
+            self,
+            # Inherited args
+            in_file_name,
+            out_file_name,
+            # Local args
+            # Inherited kwargs
+            qual_offset=pyNGSQC.DEFAULT_QUAL_OFFSET,
+            qual_threshold=pyNGSQC.DEFAULT_QUAL_THRESHOLD,
+            compression=pyNGSQC.GUESS_COMPRESSION,
+            deduplicate_header=True,
+            verbose=False,
+            # Local kwargs
+            min_length=15,
+            remove_trailing_Ns=False,
+            ):
+        # Initialise base class
+        super(QualTrimmer, self).__init__(
+            in_file_name,
+            out_file_name,
+            qual_offset=qual_offset,
+            qual_threshold=qual_threshold,
+            compression=compression,
+            deduplicate_header=deduplicate_header,
+            verbose=verbose
+            )
+        # Initialise local variables
         self.remove_trailing_Ns = remove_trailing_Ns
-        self.qual_offset = qual_offset
         self.min_length = min_length
-        self.num_reads = 0
-        self.num_good_reads = 0
-        self.num_bad_reads = 0
 
     def trim_read(self, read):
         for iii in reversed(xrange(len(read[1]))):

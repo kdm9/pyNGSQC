@@ -20,7 +20,12 @@ from array import array
 #TODO
 ## Make proper docstrings
 
+
 # Global option Variables
+## Defaults
+DEFAULT_QUAL_OFFSET = 33
+DEFAULT_QUAL_THRESHOLD = 15
+
 ## Compression
 GUESS_COMPRESSION = 0
 NO_COMPRESSION = 1
@@ -44,8 +49,8 @@ AMBIGUITY_DICT = {
     "G": ["G", "S", "K", "R", "N", "B", "D", "V"],
     "T": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
     "U": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
-    "N": ["A", "G", "C", "T", "U", "W", "K", "M", "R", "Y", "N", "B", "D",
-          "H", "V"],
+    "N": ["A", "G", "C", "T", "U", "W", "K", "M", "R", "Y", "N", "B", "D", "H",
+          "V"],
     "B": ["C", "G", "T", "U"],
     "D": ["A", "G", "T", "U"],
     "H": ["A", "C", "T", "U"],
@@ -60,58 +65,64 @@ AMBIGUITY_DICT = {
 
 
 class Base(object):
-    def __init__(self, in_file_name, out_file_name, qual_offset=64,
-                  append=False, compression=GUESS_COMPRESSION):
+
+    num_good_reads = 0L
+    num_bad_reads = 0L
+    num_reads = 0L
+
+    def __init__(
+            self,
+            in_file_name,
+            out_file_name,
+            verbose=False,
+            compression=GUESS_COMPRESSION,
+            deduplicate_header=True
+            ):
         self.in_file_name = in_file_name
         self.out_file_name = out_file_name
+        # self.compression = compression
+        self.reader = FastqReader(
+            self.in_file_name,
+            compression=compression,
+            deduplicate_header=deduplicate_header
+            )
+        self.writer = FastaWriter(
+            self.out_file_name,
+            compression=compression
+            )
+        self.verbose = verbose
+
+
+class QualBase(Base):
+
+    def __init__(
+            self,
+            # Inherited args
+            in_file_name,
+            out_file_name,
+            # Local args
+            # Inherited kwargs
+            verbose=False,
+            compression=GUESS_COMPRESSION,
+            deduplicate_header=True,
+            # Local kwargs
+            qual_offset=DEFAULT_QUAL_OFFSET,
+            qual_threshold=DEFAULT_QUAL_THRESHOLD
+            ):
+        super(QualBase, self).__init__(
+            in_file_name,
+            out_file_name,
+            verbose=verbose,
+            compression=compression,
+            deduplicate_header=True
+            )
         self.qual_offset = qual_offset
-        self.num_good_reads = 0L
-        self.num_bad_reads = 0L
-        self.num_records = -1L
-
-    # Sub-methods:
-    def _num_Ns_in_read(self, read):
-        #seq_header, seq, qual_header, qual = read
-        seq = read[1]
-        seq = seq.upper()
-        if "N" not in seq:
-            return False
-        else:
-            return seq.count('N')
-
-    def _get_qual_from_phred(self, phred):
-        qual = ord(phred) - self.qual_offset
-        if qual < 0:
-            raise ValueError(
-                    "Invalid quality score %i from phred %s (ord %i)" %
-                    (qual, phred, ord(phred))
-                )
-        return qual
-
-    # Inherited methods, used only within children
-    def _run(self, read_method, final_method):
-        this_read = []
-        for line in self.in_file:
-            line = line.strip()
-            if self.num_records < 0:
-                if line[0] != "@":
-                    continue
-                else:
-                    self.num_records += 1
-            this_read.append(line)
-            if len(this_read) == 4:
-                read_method(this_read)
-                this_read = []
-                self.num_records += 1
-        final_method()
-        self.in_file.close()
-        self.out_file.close()
+        self.qual_threshold = qual_threshold
 
 
 class _GenericFileHandle(object):
     READ = 0
     WRITE = 1
-    #APPEND = 2 # APPEND NOT SUPPORTED YET
 
     def __init__(self, file_name, mode=READ, compression=GUESS_COMPRESSION):
         self.file_name = file_name
@@ -281,8 +292,8 @@ class FastqReader(_Reader):
                     err = "Read %s has no quality header, or is misformed"
                     raise ValueError(err % repr(this_read))
                 if self.deduplicate_header:
-                    # Save space, remove duplicate headers
-                    if this_read[0][1:] == this_read[0][2:]:
+                    # Save disk space, remove duplicate headers
+                    if this_read[0][1:] == this_read[2][1:]:
                         this_read[2] = "+"
                 self.num_reads += 1
                 return this_read
@@ -366,6 +377,8 @@ def base_match(base_1, base_2, allow_ambiguity=True):
 def seq_match(seq_1, seq_2, mismatches=0, allow_ambiguity=False):
     if seq_1 == seq_2:
         return True
+    if mismatches < 1:
+        return False
     if allow_ambiguity:
         this_mismatches = 0
         for iii in xrange(len(seq_1)):
@@ -381,6 +394,30 @@ def seq_match(seq_1, seq_2, mismatches=0, allow_ambiguity=False):
                 if mismatches < 0:
                     return False
         return True
+
+
+def num_Ns_in_read(self, read):
+    #seq_header, seq, qual_header, qual = read
+    seq = read[1]
+    seq = seq.upper()
+    if "N" not in seq:
+        return False
+    else:
+        return seq.count('N')
+
+
+def get_qual_from_phred(phred, offset):
+    qual = ord(phred) - offset
+    if qual < 0:
+        raise ValueError(
+            "Invalid quality score %i from phred %s (ord %i)" %
+            (qual, phred, ord(phred))
+            )
+    return qual
+
+
+def get_phred_from_qual(qual, offset):
+    return chr(qual - offset)
 
 
 def percentile_from_counts(count_list, percentile):
@@ -401,7 +438,6 @@ def percentile_from_counts(count_list, percentile):
             # Move to next median
             median += 1
             pos_within_value = 0
-
     # At this point, median == lower of two values if the number of counts is
     # even, so we need to average the current value of median with the
     # following value of median (which may be the same number) to get the

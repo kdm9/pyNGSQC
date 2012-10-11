@@ -24,31 +24,44 @@ class Collapser(pyNGSQC.Base):
 
     def __init__(
             self,
+            # Inherited args
             in_file_name,
             out_file_name,
-            key_length=5,
-            tmp_dir=None,
+            # Local args
+            # Inherited kwargs
+            qual_offset=pyNGSQC.DEFAULT_QUAL_OFFSET,
+            qual_threshold=pyNGSQC.DEFAULT_QUAL_THRESHOLD,
             compression=pyNGSQC.GUESS_COMPRESSION,
-            verbose=False
+            deduplicate_header=True,
+            verbose=False,
+            # Local kwargs
+            key_length=5,
+            tmp_dir=None
             ):
-        self.in_file_name = in_file_name
-        self.out_file_name = out_file_name
-        self.reader = pyNGSQC.FastqReader(
-            self.in_file_name,
-            compression=compression
+        # Initialise base class
+        super(Collapser, self).__init__(
+            in_file_name,
+            out_file_name,
+            qual_offset=qual_offset,
+            qual_threshold=qual_threshold,
+            compression=compression,
+            deduplicate_header=deduplicate_header,
+            verbose=verbose
             )
+        # Initialise local variables
         self.tmp_dir = tmp_dir
-        self.verbose = verbose
         self.key_length = key_length
         self.keys = []
-        self.num_reads = 0L
         self.num_non_unique_reads = 0
         self.num_unique_reads = 0
         self.tmp_file_names = {}
         self.file_sizes = {}
 
     def _split_files(self):
-
+        """
+        Splits input file into subfiles based on their "key", or first
+         key_length bases, to allow for a memory efficient sort
+        """
         for read in self.reader:
             key = read[1][:self.key_length]
             # None means guess tmp dir
@@ -131,6 +144,10 @@ class Collapser(pyNGSQC.Base):
         return True
 
     def run_paralell(self):
+        raise RuntimeWarning(
+            "Parallellising Collapser will use num_cpus times as much " +
+            " memory as running serially"
+            )
         # We don't bother paralellising spliting of files, as it is mostly IO,
         # so would be faily pointless
         self._split_files()

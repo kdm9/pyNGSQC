@@ -27,25 +27,31 @@ FORWARD_OR_REVERSE = 2
 class BarcodeSplitter(pyNGSQC.Base):
     def __init__(
             self,
+            # Inherited args
             in_file_name,
+            out_file_name,
+            # Local args
+            # Inherited kwargs
+            compression=pyNGSQC.GUESS_COMPRESSION,
+            deduplicate_header=True,
+            verbose=False,
+            # Local kwargs
             output_dir=None,
             barcode_end=FORWARD_ONLY,
-            compression=pyNGSQC.GUESS_COMPRESSION,
-            mismatch=1,
-            verbose=False
+            mismatch=1
             ):
-        self.in_file_name = in_file_name
-        self.output_dir = output_dir
-        self.reader = pyNGSQC.FastqReader(
-            self.in_file_name,
-            compression=compression
+        # Initialise base class
+        super(BarcodeSplitter, self).__init__(
+            in_file_name,
+            out_file_name,
+            compression=compression,
+            deduplicate_header=deduplicate_header,
+            verbose=verbose
             )
         self.mismatch = mismatch
-        self.verbose = verbose
         self.barcodes = {}
         self.barcode_counts = {}
         self.barcode_files = {}
-        self.num_reads = 0
 
     def _sniff_csv_dialect(self, file_name):
         csv_fh = open(file_name, "rb")
@@ -156,7 +162,7 @@ class BarcodeSplitter(pyNGSQC.Base):
         return True
 
 
-class BarcodeSplitTask(pyNGSQC.Base):
+class BarcodeSplitTask(object):
 
     def __init__(self, read, barcodes):
         self.read = read
@@ -179,6 +185,7 @@ class BarcodeSplitTask(pyNGSQC.Base):
 
 class BarcodeWriter(pyNGSQC.Base):
     """
+    What the hell does this class do??
     """
     def __init__(self, barcodes, in_file_name, output_dir=None):
         self.in_file_name = in_file_name
@@ -235,13 +242,13 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         self.pair_2_file_name = pair_2_file_name
         self.output_dir = output_dir
         self.pair_1_reader = pyNGSQC.FastqReader(
-                                                 self.pair_1_file_name,
-                                                 compression=compression
-                                                )
+            self.pair_1_file_name,
+            compression=compression
+            )
         self.pair_2_reader = pyNGSQC.FastqReader(
-                                                 self.pair_2_file_name,
-                                                 compression=compression
-                                                )
+            self.pair_2_file_name,
+            compression=compression
+            )
         self.verbose = verbose
         self.barcodes = {}
         self.barcode_counts = {}

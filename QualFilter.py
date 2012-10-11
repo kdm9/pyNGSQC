@@ -31,33 +31,35 @@ class QualFilter(pyNGSQC.Base):
             pass_rate (float): minimum fraction of bases which must be equal
                 to or greater than qual_threshold
     """
-
-    def __init__(self,
-                 in_file_name,
-                 out_file_name,
-                 qual_threshold=15,
-                 pass_rate=0.9,
-                 max_Ns=-1,
-                 qual_offset=64,
-                 compression=pyNGSQC.GUESS_COMPRESSION
-                ):
-        self.in_file_name = in_file_name
-        self.out_file_name = out_file_name
-        self.reader = pyNGSQC.FastqReader(
-                                           self.in_file_name,
-                                           compression=compression
-                                         )
-        self.writer = pyNGSQC.FastqWriter(
-                                           self.out_file_name,
-                                           compression=compression
-                                          )
+    def __init__(
+            self,
+            # Inherited args
+            in_file_name,
+            out_file_name,
+            # Local args
+            # Inherited kwargs
+            qual_offset=64,
+            compression=pyNGSQC.GUESS_COMPRESSION,
+            deduplicate_header=True,
+            verbose=False,
+            # Local kwargs
+            qual_threshold=15,
+            pass_rate=0.9,
+            max_Ns=-1
+            ):
+        # Initialise base class
+        super(QualFilter, self).__init__(
+            in_file_name,
+            out_file_name,
+            qual_offset=qual_offset,
+            compression=compression,
+            deduplicate_header=deduplicate_header,
+            verbose=verbose
+            )
+        # Initialise local variables
         self.pass_rate = float(pass_rate)
         self.qual_threshold = qual_threshold
-        self.qual_offset = qual_offset
         self.max_Ns = max_Ns
-        self.num_reads = 0
-        self.num_good_reads = 0
-        self.num_bad_reads = 0
 
     def _passes_score_qc(self, read):
         qual = read[3]
@@ -147,9 +149,6 @@ class QualFilterTask(QualFilter):
         self.qual_threshold = qual_threshold
         self.qual_offset = qual_offset
         self.max_Ns = max_Ns
-        self.num_reads = 0
-        self.num_good_reads = 0
-        self.num_bad_reads = 0
 
     def __call__(self):
         return self.filter_read(self.read)
