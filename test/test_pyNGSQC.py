@@ -13,25 +13,25 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pyNGSQC import pyNGSQC as ngs
-from pyNGSQC import QualFilter as qfil
-from pyNGSQC import QualStats as qstat
-from pyNGSQC import QualTrimmer as qtrim
-from pyNGSQC import HardTrimmer as htrim
-from pyNGSQC import BarcodeSplitter as bcs
-from pyNGSQC import Collapser as col
-from pyNGSQC import Converter as conv
+import pyngsqc as ngs
+from pyngsqc import qualfilter as qfil
+from pyngsqc import qualstats as qstat
+from pyngsqc import qualtrimmer as qtrim
+from pyngsqc import hardtrimmer as htrim
+from pyngsqc import barcodesplitter as bcs
+from pyngsqc import collapser as col
+from pyngsqc import converter as conv
 
 import time
 import csv
 import unittest
-prefix = "./pyNGSQC/test/data/"
-in_file = prefix + "in.fastq"
+prefix = "./test/data/"
+in_file = prefix + "test.fastq"
 out_dir = prefix + "out/"
 timer = time.time()
 
 
-class pyNGSQCtester(unittest.TestCase):
+class Tester(unittest.TestCase):
     timer = time.time()
 
     def testFastqReader(self):
@@ -115,7 +115,7 @@ class pyNGSQCtester(unittest.TestCase):
 
 def suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(pyNGSQCtester))
+    suite.addTest(unittest.makeSuite(Tester))
     return suite
 
 if __name__ == "__main__":
