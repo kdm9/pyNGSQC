@@ -13,11 +13,11 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from sys import stderr
-import paralellNGS
-import pyNGSQC
+import _paralell
+import pyngsqc
 
 
-class HardTrimmer(pyNGSQC.Base):
+class HardTrimmer(pyngsqc.Base):
     """
     """
     def __init__(
@@ -26,7 +26,7 @@ class HardTrimmer(pyNGSQC.Base):
             out_file_name,
             length=15,
             verbose=False,
-            compression=pyNGSQC.GUESS_COMPRESSION
+            compression=pyngsqc.GUESS_COMPRESSION
             ):
         super(HardTrimmer, self).__init__(
             in_file_name,
@@ -58,7 +58,7 @@ class HardTrimmer(pyNGSQC.Base):
         return True
 
     def run_paralell(self):
-        runner = paralellNGS.ParalellRunner(
+        runner = _paralell.ParalellRunner(
             HardTrimmerTask,
             self.reader,
             self.writer,

@@ -12,17 +12,17 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyNGSQC
+import pyngsqc
 from sys import stderr
-import paralellNGS
+import _paralell
 
 
-class QualFilter(pyNGSQC.Base):
+class QualFilter(pyngsqc.Base):
     """
     Usage:
         QualityFilter(in_file_name, out_file_name, qual_threshold=15,
                   pass_rate=0.9, max_Ns=-1, qual_offset=64, append=False,
-                  compression=pyNGSQC.GUESS_COMPRESSION):
+                  compression=pyngsqc.GUESS_COMPRESSION):
             in_file_name (str): path of input file, can be .fastq, .fastq.gz
                 or .fastq.bz2
             out_file_name (str): path of output file, can be .fastq, .fastq.gz
@@ -39,7 +39,7 @@ class QualFilter(pyNGSQC.Base):
             # Local args
             # Inherited kwargs
             qual_offset=64,
-            compression=pyNGSQC.GUESS_COMPRESSION,
+            compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
             verbose=False,
             # Local kwargs
@@ -121,7 +121,7 @@ class QualFilter(pyNGSQC.Base):
             self.max_Ns
             )
 
-        runner = paralellNGS.ParalellRunner(
+        runner = _paralell.ParalellRunner(
             QualFilterTask,
             self.reader,
             self.writer,

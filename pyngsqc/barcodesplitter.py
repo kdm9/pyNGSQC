@@ -13,18 +13,18 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from sys import stderr
-import pyNGSQC
+import pyngsqc
 import csv
 from os import path
-from pyNGSQC import seq_match
-import paralellNGS
+from pyngsqc import seq_match
+import _paralell
 
 FORWARD_ONLY = 0
 REVERSE_ONLY = 1
 FORWARD_OR_REVERSE = 2
 
 
-class BarcodeSplitter(pyNGSQC.Base):
+class BarcodeSplitter(pyngsqc.Base):
     def __init__(
             self,
             # Inherited args
@@ -32,7 +32,7 @@ class BarcodeSplitter(pyNGSQC.Base):
             out_file_name,
             # Local args
             # Inherited kwargs
-            compression=pyNGSQC.GUESS_COMPRESSION,
+            compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
             verbose=False,
             # Local kwargs
@@ -63,7 +63,7 @@ class BarcodeSplitter(pyNGSQC.Base):
         return csv_dialect
 
     def set_barcodes_from_file(self, file_name, csv_dialect=csv.excel):
-        if csv_dialect == pyNGSQC.SNIFF_CSV_DIALECT:
+        if csv_dialect == pyngsqc.SNIFF_CSV_DIALECT:
             csv_dialect = self._sniff_csv_dialect(file_name)
         csv_fh = open(file_name, "rb")
         csv_reader = csv.reader(csv_fh, dialect=csv_dialect)
@@ -90,7 +90,7 @@ class BarcodeSplitter(pyNGSQC.Base):
         if len(split_path) > 1:
             # If the path had extensions, add them
             out_path += "." + ".".join(split_path[1:])
-        writer = pyNGSQC.FastqWriter(out_path)
+        writer = pyngsqc.FastqWriter(out_path)
         return writer
 
     def _parse_read_barcode(self, read):
@@ -145,7 +145,7 @@ class BarcodeSplitter(pyNGSQC.Base):
                 " run()-ing BarcodeSplitter"
                 )
             return False
-        runner = paralellNGS.ParalellRunner(
+        runner = _paralell.ParalellRunner(
             BarcodeSplitTask,
             self.reader,
             BarcodeWriter(
@@ -183,7 +183,7 @@ class BarcodeSplitTask(object):
         return (None, self.read)
 
 
-class BarcodeWriter(pyNGSQC.Base):
+class BarcodeWriter(pyngsqc.Base):
     """
     What the hell does this class do??
     """
@@ -210,7 +210,7 @@ class BarcodeWriter(pyNGSQC.Base):
         if len(split_path) > 1:
             # If the path had extensions, add them
             out_path += "." + ".".join(split_path[1:])
-        writer = pyNGSQC.FastqWriter(out_path)
+        writer = pyngsqc.FastqWriter(out_path)
         return writer
 
     def write(self, pair):
@@ -235,17 +235,17 @@ class PairedBarcodeSplitter(BarcodeSplitter):
                  pair_1_file_name,
                  pair_2_file_name,
                  output_dir=None,
-                 compression=pyNGSQC.GUESS_COMPRESSION,
+                 compression=pyngsqc.GUESS_COMPRESSION,
                  verbose=False
                 ):
         self.pair_1_file_name = pair_1_file_name
         self.pair_2_file_name = pair_2_file_name
         self.output_dir = output_dir
-        self.pair_1_reader = pyNGSQC.FastqReader(
+        self.pair_1_reader = pyngsqc.FastqReader(
             self.pair_1_file_name,
             compression=compression
             )
-        self.pair_2_reader = pyNGSQC.FastqReader(
+        self.pair_2_reader = pyngsqc.FastqReader(
             self.pair_2_file_name,
             compression=compression
             )
@@ -277,7 +277,7 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         if len(read_1_split_path) > 1:
             # If the path had extensions, add them
             out_path += "." + ".".join(read_1_split_path[1:])
-        read_1_writer = pyNGSQC.FastqWriter(out_path)
+        read_1_writer = pyngsqc.FastqWriter(out_path)
 
         # Read 2
         read_2_split_path = path.basename(self.pair_1_file_name).split(".")
@@ -289,7 +289,7 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         # If the path had extensions, add them
         if len(read_2_split_path) > 1:
             out_path += "." + ".".join(read_2_split_path[1:])
-        read_2_writer = pyNGSQC.FastqWriter(out_path)
+        read_2_writer = pyngsqc.FastqWriter(out_path)
 
         return (read_1_writer, read_2_writer)
 

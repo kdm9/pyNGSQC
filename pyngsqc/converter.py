@@ -13,10 +13,10 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyNGSQC
+import pyngsqc
 
 
-class FastqToFasta(pyNGSQC.Base):
+class FastqToFasta(pyngsqc.Base):
 
     def __init__(
              self,
@@ -24,7 +24,7 @@ class FastqToFasta(pyNGSQC.Base):
              out_file_name,
              remove_header=False,
              deduplicate_header=True,
-             compression=pyNGSQC.GUESS_COMPRESSION
+             compression=pyngsqc.GUESS_COMPRESSION
             ):
         super(ConvertPhredOffset, self).__init__(
             in_file_name,
@@ -48,7 +48,7 @@ class FastqToFasta(pyNGSQC.Base):
         return True
 
 
-class ConvertPhredOffset(pyNGSQC.Base):
+class ConvertPhredOffset(pyngsqc.Base):
 
     def __init__(
              self,
@@ -57,7 +57,7 @@ class ConvertPhredOffset(pyNGSQC.Base):
              in_qual_offset=33,
              out_qual_offset=64,
              deduplicate_header=True,
-             compression=pyNGSQC.GUESS_COMPRESSION
+             compression=pyngsqc.GUESS_COMPRESSION
             ):
         super(ConvertPhredOffset, self).__init__(
             in_file_name,
@@ -83,8 +83,8 @@ class ConvertPhredOffset(pyNGSQC.Base):
 def convert_phred_offset(in_phred, in_qual_offset, out_qual_offset):
     out_phred = ""
     for char in in_phred:
-        out_phred += pyNGSQC.get_phred_from_qual(
-            pyNGSQC.get_qual_from_phred(char, in_qual_offset),
+        out_phred += pyngsqc.get_phred_from_qual(
+            pyngsqc.get_qual_from_phred(char, in_qual_offset),
             out_qual_offset
             )
     return out_phred

@@ -13,11 +13,11 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from sys import stderr
-import pyNGSQC
-import paralellNGS
+import pyngsqc
+import _paralell
 
 
-class QualTrimmer(pyNGSQC.QualBase):
+class QualTrimmer(pyngsqc.QualBase):
 
     def __init__(
             self,
@@ -26,9 +26,9 @@ class QualTrimmer(pyNGSQC.QualBase):
             out_file_name,
             # Local args
             # Inherited kwargs
-            qual_offset=pyNGSQC.DEFAULT_QUAL_OFFSET,
-            qual_threshold=pyNGSQC.DEFAULT_QUAL_THRESHOLD,
-            compression=pyNGSQC.GUESS_COMPRESSION,
+            qual_offset=pyngsqc.DEFAULT_QUAL_OFFSET,
+            qual_threshold=pyngsqc.DEFAULT_QUAL_THRESHOLD,
+            compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
             verbose=False,
             # Local kwargs
@@ -88,7 +88,7 @@ class QualTrimmer(pyNGSQC.QualBase):
         return True
 
     def run_paralell(self):
-        runner = paralellNGS.ParalellRunner(
+        runner = _paralell.ParalellRunner(
             QualTrimmerTask,
             self.reader,
             self.writer,

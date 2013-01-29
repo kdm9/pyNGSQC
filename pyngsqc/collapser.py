@@ -12,14 +12,14 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyNGSQC
-import paralellNGS
+import pyngsqc
+import _paralell
 import sys
 from tempfile import NamedTemporaryFile as namedtmp
 import os
 
 
-class Collapser(pyNGSQC.Base):
+class Collapser(pyngsqc.Base):
     #MAX_FILE_SIZE = 2 << 30  # 2GB
 
     def __init__(
@@ -29,9 +29,9 @@ class Collapser(pyNGSQC.Base):
             out_file_name,
             # Local args
             # Inherited kwargs
-            qual_offset=pyNGSQC.DEFAULT_QUAL_OFFSET,
-            qual_threshold=pyNGSQC.DEFAULT_QUAL_THRESHOLD,
-            compression=pyNGSQC.GUESS_COMPRESSION,
+            qual_offset=pyngsqc.DEFAULT_QUAL_OFFSET,
+            qual_threshold=pyngsqc.DEFAULT_QUAL_THRESHOLD,
+            compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
             verbose=False,
             # Local kwargs
@@ -102,12 +102,12 @@ class Collapser(pyNGSQC.Base):
         return read
 
     def _colapse(self):
-        sorted_writer = pyNGSQC.FastqWriter(self.out_file_name)
+        sorted_writer = pyngsqc.FastqWriter(self.out_file_name)
         for key in sorted(self.keys):
             these_reads = []
             file_name = self.tmp_file_names[key]
 
-            reader = pyNGSQC.FastqReader(file_name)
+            reader = pyngsqc.FastqReader(file_name)
             for read in reader:
                 these_reads.append(self._read_to_tuple(read))
             these_reads.sort()
@@ -152,9 +152,9 @@ class Collapser(pyNGSQC.Base):
         # so would be faily pointless
         self._split_files()
 
-        sorted_writer = pyNGSQC.FastqWriter(self.out_file_name)
-        files = pyNGSQC.dict_to_tuples(self.tmp_file_names)
-        runner = paralellNGS.ParalellRunner(
+        sorted_writer = pyngsqc.FastqWriter(self.out_file_name)
+        files = pyngsqc.dict_to_tuples(self.tmp_file_names)
+        runner = _paralell.ParalellRunner(
             CollapserTask,
             files,
             sorted_writer
@@ -182,7 +182,7 @@ class CollapserTask(Collapser):
         these_reads = []
         these_unique_reads = []
 
-        reader = pyNGSQC.FastqReader(file_name)
+        reader = pyngsqc.FastqReader(file_name)
         for read in reader:
             these_reads.append(self._read_to_tuple(read))
         these_reads.sort()

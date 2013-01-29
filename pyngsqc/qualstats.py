@@ -12,7 +12,7 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyNGSQC
+import pyngsqc
 from copy import deepcopy
 
 
@@ -22,7 +22,7 @@ class _QualStatsTask():
         super(_QualStatsTask, self).__init__()
 
 
-class QualStats(pyNGSQC.QualBase):
+class QualStats(pyngsqc.QualBase):
 
     def __init__(
             self,
@@ -31,12 +31,12 @@ class QualStats(pyNGSQC.QualBase):
             out_file_name,
             # Local args
             # Inherited kwargs
-            qual_offset=pyNGSQC.DEFAULT_OFFSET,
-            compression=pyNGSQC.GUESS_COMPRESSION,
+            qual_offset=pyngsqc.DEFAULT_OFFSET,
+            compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
             verbose=False,
             # Local kwargs
-            output=pyNGSQC.STDOUT
+            output=pyngsqc.STDOUT
             ):
         # Initialise base class
         super(QualStats, self).__init__(
@@ -107,15 +107,15 @@ class QualStats(pyNGSQC.QualBase):
             position["summary"]["mean"] = position["summary"]["sum"] / \
              position["summary"]["count"]
             # Quartiles, median, iqr and whiskers
-            position["summary"]["Q1"] = pyNGSQC.percentile_from_counts(
+            position["summary"]["Q1"] = pyngsqc.percentile_from_counts(
                 position["scores"],
                 0.25
                 )
-            position["summary"]["median"] = pyNGSQC.percentile_from_counts(
+            position["summary"]["median"] = pyngsqc.percentile_from_counts(
                 position["scores"],
                 0.5
                 )
-            position["summary"]["Q3"] = pyNGSQC.percentile_from_counts(
+            position["summary"]["Q3"] = pyngsqc.percentile_from_counts(
                 position["scores"],
                 0.75
                 )
@@ -123,7 +123,7 @@ class QualStats(pyNGSQC.QualBase):
              position["summary"]["Q1"]
 
             (position["summary"]["lW"], position["summary"]["rW"]) = \
-             pyNGSQC.whiskers_from_counts(position["scores"])
+             pyngsqc.whiskers_from_counts(position["scores"])
 
             # Calculate Base Counts
             total_count = 0
