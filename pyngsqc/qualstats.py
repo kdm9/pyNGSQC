@@ -82,7 +82,6 @@ class QualStats(pyngsqc.QualBase):
             }
 
     def _print_summary(self):
-        self._summarize_data()
         print
         print "cycle\t", "\t".join(self.columns)
         cycle = 0
@@ -150,5 +149,6 @@ class QualStats(pyngsqc.QualBase):
         for read in self.reader:
             self.num_reads += 1
             self._process_read(read)
+        self._summarize_data()
         self._print_summary()
         return True
