@@ -80,17 +80,19 @@ class Base(object):
             ):
         self.in_file_name = in_file_name
         self.out_file_name = out_file_name
-        # self.compression = compression
-        self.reader = FastqReader(
-            self.in_file_name,
-            compression=compression,
-            deduplicate_header=deduplicate_header
-            )
-        self.writer = FastaWriter(
-            self.out_file_name,
-            compression=compression
-            )
+        #self.compression = compression  # this is set in the reader and writer
         self.verbose = verbose
+        if self.in_file_name is not None:
+            self.reader = FastqReader(
+                    self.in_file_name,
+                    compression=compression,
+                    deduplicate_header=deduplicate_header
+                    )
+        if self.out_file_name is not None: 
+            self.writer = FastaWriter(
+                self.out_file_name,
+                compression=compression
+                )
 
 
 class QualBase(Base):

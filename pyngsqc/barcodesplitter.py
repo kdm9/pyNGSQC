@@ -29,25 +29,25 @@ class BarcodeSplitter(pyngsqc.Base):
             self,
             # Inherited args
             in_file_name,
-            out_file_name,
+            output_dir,
             # Local args
             # Inherited kwargs
             compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
             verbose=False,
             # Local kwargs
-            output_dir=None,
             barcode_end=FORWARD_ONLY,
             mismatch=1
             ):
         # Initialise base class
         super(BarcodeSplitter, self).__init__(
             in_file_name,
-            out_file_name,
+            out_file_name=None,  # we dont have one for this class
             compression=compression,
             deduplicate_header=deduplicate_header,
             verbose=verbose
             )
+        self.output_dir = output_dir
         self.mismatch = mismatch
         self.barcodes = {}
         self.barcode_counts = {}
