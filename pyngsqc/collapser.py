@@ -29,8 +29,6 @@ class Collapser(pyngsqc.Base):
             out_file_name,
             # Local args
             # Inherited kwargs
-            qual_offset=pyngsqc.DEFAULT_QUAL_OFFSET,
-            qual_threshold=pyngsqc.DEFAULT_QUAL_THRESHOLD,
             compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
             verbose=False,
@@ -42,8 +40,6 @@ class Collapser(pyngsqc.Base):
         super(Collapser, self).__init__(
             in_file_name,
             out_file_name,
-            qual_offset=qual_offset,
-            qual_threshold=qual_threshold,
             compression=compression,
             deduplicate_header=deduplicate_header,
             verbose=verbose
@@ -64,7 +60,6 @@ class Collapser(pyngsqc.Base):
         """
         for read in self.reader:
             key = read[1][:self.key_length]
-            # None means guess tmp dir
             if key in self.tmp_file_names:
                 fh = open(self.tmp_file_names[key], "ab")
             else:
@@ -85,8 +80,8 @@ class Collapser(pyngsqc.Base):
         # get file size
         for key in self.tmp_file_names:
             fh = open(self.tmp_file_names[key], "rb")
-            fh.seek(0, 2)
-            this_file_size = fh.tell()
+            fh.seek(0, 2)  #go the end of the file
+            this_file_size = fh.tell()  # and get its size
             self.file_sizes[key] = this_file_size
             fh.close
 
@@ -136,7 +131,7 @@ class Collapser(pyngsqc.Base):
     def run(self):
         self._split_files()
         print "Files Split, sizes:"
-        for key, size in self.file_sizes:
+        for key, size in self.file_sizes.iteritems():
             print "\t%s %r" % (key, size)
         self._colapse()
         print "collapsed"
