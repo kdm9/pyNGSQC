@@ -17,7 +17,7 @@ from sys import stderr
 import _paralell
 
 
-class QualFilter(pyngsqc.Base):
+class QualFilter(pyngsqc.QualBase):
     """
     Usage:
         QualityFilter(in_file_name, out_file_name, qual_threshold=15,
@@ -66,7 +66,7 @@ class QualFilter(pyngsqc.Base):
         read_len = len(qual)
         low_scores = 0
         for p in qual:
-            if self._get_qual_from_phred(p) < self.qual_threshold:
+            if pyngsqc.get_qual_from_phred(p, self.qual_offset) < self.qual_threshold:
                 low_scores += 1
         this_pass_rate = 1.0 - float(low_scores) / float(read_len)
         if this_pass_rate <= self.pass_rate:
