@@ -28,10 +28,9 @@ class QualStats(pyngsqc.QualBase):
             self,
             # Inherited args
             in_file_name,
-            out_file_name,
             # Local args
             # Inherited kwargs
-            qual_offset=pyngsqc.DEFAULT_OFFSET,
+            qual_offset=pyngsqc.DEFAULT_QUAL_OFFSET,
             compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
             verbose=False,
@@ -41,7 +40,7 @@ class QualStats(pyngsqc.QualBase):
         # Initialise base class
         super(QualStats, self).__init__(
             in_file_name,
-            out_file_name,
+            out_file_name = None,  # This class doesn't have one
             qual_offset=qual_offset,
             compression=compression,
             deduplicate_header=deduplicate_header,
@@ -140,7 +139,7 @@ class QualStats(pyngsqc.QualBase):
 
         for pos in xrange(len(read[1])):
             base = read[1][pos]
-            score = self._get_qual_from_phred(read[3][pos])
+            score = pyngsqc.get_qual_from_phred(read[3][pos], self.qual_offset)
             self.positions[pos]["scores"][score] += 1
             try:
                 self.positions[pos]["bases"][base] += 1
