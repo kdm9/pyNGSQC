@@ -55,8 +55,8 @@ class QualTrimmer(pyngsqc.QualBase):
                 # Remove last base and score
                 read[1] = read[1][:-1]  # Base
                 read[3] = read[3][:-1]  # Phred Score
-            elif self._get_qual_from_phred(read[3][iii]) < \
-             self.qual_threshold:
+            elif pyngsqc.get_qual_from_phred(read[3][iii], self.qual_offset) \
+             < self.qual_threshold:
                 read[1] = read[1][:-1]  # Base
                 read[3] = read[3][:-1]  # Phred Score
         if len(read[1]) < self.min_length:
