@@ -26,12 +26,13 @@ class FastqToFasta(pyngsqc.Base):
              deduplicate_header=True,
              compression=pyngsqc.GUESS_COMPRESSION
             ):
-        super(ConvertPhredOffset, self).__init__(
+        super(FastqToFasta, self).__init__(
             in_file_name,
             out_file_name,
             compression=compression,
             deduplicate_header=deduplicate_header
             )
+        self.remove_header = remove_header
 
     def run(self):
         for read in self.reader:
