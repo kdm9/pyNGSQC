@@ -130,11 +130,7 @@ class Collapser(pyngsqc.Base):
 
     def run(self):
         self._split_files()
-        print "Files Split, sizes:"
-        for key, size in self.file_sizes.iteritems():
-            print "\t%s %r" % (key, size)
         self._colapse()
-        print "collapsed"
         self.print_summary()
         return True
 
