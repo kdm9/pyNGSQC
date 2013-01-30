@@ -30,22 +30,29 @@ import os
 prefix = "./test/data/"
 in_file = prefix + "test.fastq"
 out_dir = prefix + "out/"
-os.mkdir(out_dir)  # empty dir is not included in git, so make it here
+if not os.path.isdir(out_dir):
+    os.mkdir(out_dir)  # empty dir is not included in git, so make it here
 timer = time.time()
 
 
 class Tester(unittest.TestCase):
-    timer = time.time()
 
     def testFastqReader(self):
         fqrdr = ngs.FastqReader(in_file)
         count = 0
         for read in fqrdr:
             count += 1
-        print "Count is: %i" % count
-        print "testFastqReader took %.3f sec" % (time.time() - self.timer)
-        self.timer = time.time()
-        self.assertEqual(1, 1)
+        self.assertEqual(count, 1000)
+
+    def testQualFilterParalell(self):
+        qf = qfil.QualFilter(
+            in_file,
+            out_dir + "qf.fastq",
+            qual_threshold=20,
+            qual_offset=33
+            )
+        retval = qf.run_paralell()
+        self.assertEqual(retval, True)
 
     def testQualFilter(self):
         qf = qfil.QualFilter(
@@ -55,9 +62,6 @@ class Tester(unittest.TestCase):
             qual_offset=33
             )
         retval = qf.run()
-        #retval = qf.run_paralell()
-        print "testQualFilter took %.3f sec" % (time.time() - self.timer)
-        self.timer = time.time()
         self.assertEqual(retval, True)
 
     def testCollapser(self):
@@ -66,8 +70,17 @@ class Tester(unittest.TestCase):
             out_dir + "col.fastq",
             )
         retval = co.run()
-        print "testCollapser took %.3f sec" % (time.time() - self.timer)
-        self.timer = time.time()
+        self.assertEqual(retval, True)
+
+    def testQualTrimmerParalell(self):
+        qt = qtrim.QualTrimmer(
+            in_file,
+            out_dir + "qt.fastq",
+            qual_threshold=20,
+            min_length=10,
+            qual_offset=33
+            )
+        retval = qt.run_paralell()
         self.assertEqual(retval, True)
 
     def testQualTrimmer(self):
@@ -79,40 +92,33 @@ class Tester(unittest.TestCase):
             qual_offset=33
             )
         retval = qt.run()
-        #retval = qt.run_paralell()
-        print "testQualTrimmer took %.3f sec" % (time.time() - self.timer)
-        self.timer = time.time()
+        self.assertEqual(retval, True)
+
+    def testBarcodeSplitterParalell(self):
+        bc = bcs.BarcodeSplitter(in_file, out_dir)
+        bc.set_barcodes_from_file(prefix + "barcodes.csv", csv.excel)
+        retval = bc.run_paralell()
         self.assertEqual(retval, True)
 
     def testBarcodeSplitter(self):
         bc = bcs.BarcodeSplitter(in_file, out_dir)
         bc.set_barcodes_from_file(prefix + "barcodes.csv", csv.excel)
         retval = bc.run()
-        #retval = bc.run_paralell()
-        print "testBarcodeSplitter took %.3f sec" % (time.time() - self.timer)
-        self.timer = time.time()
         self.assertEqual(retval, True)
 
-    def testHardTrimmer(self):
+    def testHardTrimmerParalell(self):
         ht = htrim.HardTrimmer(in_file, out_dir + "ht.fastq", length=30)
-        retval = ht.run()
-        #retval = ht.run_paralell()
-        print "testHardTrimmer took %.3f sec" % (time.time() - self.timer)
-        self.timer = time.time()
+        retval = ht.run_paralell()
         self.assertEqual(retval, True)
 
     def testQualStats(self):
         qs = qstat.QualStats(in_file, qual_offset=33)
         retval = qs.run()
-        print "testQualStats took %.3f sec" % (time.time() - self.timer)
-        self.timer = time.time()
         self.assertEqual(retval, True)
 
     def testFastqToFasta(self):
         ftf = conv.FastqToFasta(in_file, out_dir + "fasta.fasta")
         retval = ftf.run()
-        print "testFastqToFasta took %.3f sec" % (time.time() - self.timer)
-        self.timer = time.time()
         self.assertEqual(retval, True)
 
 
