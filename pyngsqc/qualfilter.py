@@ -76,7 +76,7 @@ class QualFilter(pyngsqc.QualBase):
 
     def _passes_qc(self, read):
         if self.max_Ns != -1 and \
-         int(self._num_Ns_in_read(read)) > self.max_Ns:
+         int(pyngsqc.num_Ns_in_read(read)) > self.max_Ns:
             self.num_bad_reads += 1
             return False
         elif not self._passes_score_qc(read):
