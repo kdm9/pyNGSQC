@@ -1,5 +1,5 @@
 #Copyright 2012 Kevin Murray
-#This program is free software: you can redistribute it and/or modify
+ program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
 #(at your option) any later version.
@@ -398,8 +398,7 @@ def seq_match(seq_1, seq_2, mismatches=0, allow_ambiguity=False):
         return True
 
 
-def num_Ns_in_read(self, read):
-    #seq_header, seq, qual_header, qual = read
+def num_Ns_in_read(read):
     seq = read[1]
     seq = seq.upper()
     if "N" not in seq:
