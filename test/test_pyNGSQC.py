@@ -25,9 +25,12 @@ from pyngsqc import converter as conv
 import time
 import csv
 import unittest
+import os
+
 prefix = "./test/data/"
 in_file = prefix + "test.fastq"
 out_dir = prefix + "out/"
+os.mkdir(out_dir)  # empty dir is not included in git, so make it here
 timer = time.time()
 
 
