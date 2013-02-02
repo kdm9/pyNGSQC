@@ -14,7 +14,7 @@
 
 import pyngsqc
 from sys import stderr
-import _paralell
+import _parallel
 
 
 class QualFilter(pyngsqc.QualBase):
@@ -113,7 +113,7 @@ class QualFilter(pyngsqc.QualBase):
         self.reader.close()
         return True
 
-    def run_paralell(self):
+    def run_parallel(self):
         task_args = (
             self.pass_rate,
             self.qual_threshold,
@@ -121,7 +121,7 @@ class QualFilter(pyngsqc.QualBase):
             self.max_Ns
             )
 
-        runner = _paralell.ParalellRunner(
+        runner = _parallel.ParallelRunner(
             QualFilterTask,
             self.reader,
             self.writer,

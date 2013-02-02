@@ -14,7 +14,7 @@
 
 from sys import stderr
 import pyngsqc
-import _paralell
+import _parallel
 
 
 class QualTrimmer(pyngsqc.QualBase):
@@ -87,8 +87,8 @@ class QualTrimmer(pyngsqc.QualBase):
         self.print_summary()
         return True
 
-    def run_paralell(self):
-        runner = _paralell.ParalellRunner(
+    def run_parallel(self):
+        runner = _parallel.ParallelRunner(
             QualTrimmerTask,
             self.reader,
             self.writer,

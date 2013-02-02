@@ -44,14 +44,14 @@ class Tester(unittest.TestCase):
             count += 1
         self.assertEqual(count, 1000)
 
-    def testQualFilterParalell(self):
+    def testQualFilterParallel(self):
         qf = qfil.QualFilter(
             in_file,
             out_dir + "qf.fastq",
             qual_threshold=20,
             qual_offset=33
             )
-        retval = qf.run_paralell()
+        retval = qf.run_parallel()
         self.assertEqual(retval, True)
 
     def testQualFilter(self):
@@ -72,7 +72,7 @@ class Tester(unittest.TestCase):
         retval = co.run()
         self.assertEqual(retval, True)
 
-    def testQualTrimmerParalell(self):
+    def testQualTrimmerParallel(self):
         qt = qtrim.QualTrimmer(
             in_file,
             out_dir + "qt.fastq",
@@ -80,7 +80,7 @@ class Tester(unittest.TestCase):
             min_length=10,
             qual_offset=33
             )
-        retval = qt.run_paralell()
+        retval = qt.run_parallel()
         self.assertEqual(retval, True)
 
     def testQualTrimmer(self):
@@ -94,10 +94,10 @@ class Tester(unittest.TestCase):
         retval = qt.run()
         self.assertEqual(retval, True)
 
-    def testBarcodeSplitterParalell(self):
+    def testBarcodeSplitterParallel(self):
         bc = bcs.BarcodeSplitter(in_file, out_dir)
         bc.set_barcodes_from_file(prefix + "barcodes.csv", csv.excel)
-        retval = bc.run_paralell()
+        retval = bc.run_parallel()
         self.assertEqual(retval, True)
 
     def testBarcodeSplitter(self):
@@ -106,9 +106,9 @@ class Tester(unittest.TestCase):
         retval = bc.run()
         self.assertEqual(retval, True)
 
-    def testHardTrimmerParalell(self):
+    def testHardTrimmerParallel(self):
         ht = htrim.HardTrimmer(in_file, out_dir + "ht.fastq", length=30)
-        retval = ht.run_paralell()
+        retval = ht.run_parallel()
         self.assertEqual(retval, True)
 
     def testQualStats(self):

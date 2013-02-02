@@ -17,7 +17,7 @@ import pyngsqc
 import csv
 from os import path
 from pyngsqc import seq_match
-import _paralell
+import _parallel
 
 FORWARD_ONLY = 0
 REVERSE_ONLY = 1
@@ -138,14 +138,14 @@ class BarcodeSplitter(pyngsqc.Base):
         self.print_summary()
         return True
 
-    def run_paralell(self):
+    def run_parallel(self):
         if len(self.barcodes) < 1:
             raise ValueError(
                 "You must supply a barcode dict or file before" +
                 " run()-ing BarcodeSplitter"
                 )
             return False
-        runner = _paralell.ParalellRunner(
+        runner = _parallel.ParallelRunner(
             BarcodeSplitTask,
             self.reader,
             BarcodeWriter(

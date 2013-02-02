@@ -58,7 +58,7 @@ class WriterProcess(mp.Process):
             self.queue.task_done()
 
 
-class ParalellRunner(object):
+class ParallelRunner(object):
 
     def __init__(self, task, reader, writer, task_args=tuple()):
         self.task = task
