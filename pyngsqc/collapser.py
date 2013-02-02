@@ -13,7 +13,7 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyngsqc
-import _paralell
+import _parallel
 import sys
 from tempfile import NamedTemporaryFile as namedtmp
 import os
@@ -134,18 +134,18 @@ class Collapser(pyngsqc.Base):
         self.print_summary()
         return True
 
-    def run_paralell(self):
+    def run_parallel(self):
         raise RuntimeWarning(
             "Parallellising Collapser will use num_cpus times as much " +
             " memory as running serially"
             )
-        # We don't bother paralellising spliting of files, as it is mostly IO,
+        # We don't bother parallelising spliting of files, as it is mostly IO,
         # so would be faily pointless
         self._split_files()
 
         sorted_writer = pyngsqc.FastqWriter(self.out_file_name)
         files = pyngsqc.dict_to_tuples(self.tmp_file_names)
-        runner = _paralell.ParalellRunner(
+        runner = _parallel.ParallelRunner(
             CollapserTask,
             files,
             sorted_writer

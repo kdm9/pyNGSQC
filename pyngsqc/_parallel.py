@@ -59,7 +59,7 @@ class WriterProcess(mp.Process):
         return self.counter
 
 
-class ParalellRunner(object):
+class ParallelRunner(object):
 
     def __init__(self, task, reader, writer, task_args=tuple()):
         self.task = task

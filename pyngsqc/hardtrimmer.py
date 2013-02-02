@@ -13,7 +13,7 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from sys import stderr
-import _paralell
+import _parallel
 import pyngsqc
 
 
@@ -57,8 +57,8 @@ class HardTrimmer(pyngsqc.Base):
         self.print_summary()
         return True
 
-    def run_paralell(self):
-        runner = _paralell.ParalellRunner(
+    def run_parallel(self):
+        runner = _parallel.ParallelRunner(
             HardTrimmerTask,
             self.reader,
             self.writer,
