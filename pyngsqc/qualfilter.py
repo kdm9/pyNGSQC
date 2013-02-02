@@ -102,7 +102,7 @@ class QualFilter(pyngsqc.QualBase):
         if self._passes_qc(read):
             return read
         else:
-            return None
+            return []
 
     def run(self):
         for read in self.reader:
