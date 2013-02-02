@@ -56,7 +56,6 @@ class WriterProcess(mp.Process):
             self.num_good_reads += 1
             self.writer.write(result)
             self.queue.task_done()
-        return self.counter
 
 
 class ParallelRunner(object):
@@ -96,7 +95,7 @@ class ParallelRunner(object):
         results.put(None)
 
         return (
-                num_reads,
+                self.num_reads,
                 writer_proc.num_good_reads,
-                num_reads - writer_proc.num_good_reads
+                self.num_reads - writer_proc.num_good_reads
                 )
