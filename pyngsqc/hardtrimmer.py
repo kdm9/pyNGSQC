@@ -26,13 +26,15 @@ class HardTrimmer(pyngsqc.Base):
             out_file_name,
             length=15,
             verbose=False,
-            compression=pyngsqc.GUESS_COMPRESSION
+            compression=pyngsqc.GUESS_COMPRESSION,
+            print_summary=False
             ):
         super(HardTrimmer, self).__init__(
             in_file_name,
             out_file_name,
             verbose=verbose,
-            compression=compression
+            compression=compression,
+            print_summary=print_summary
             )
         self.length = length
 
@@ -41,7 +43,7 @@ class HardTrimmer(pyngsqc.Base):
         read[3] = read[3][:self.length]  # Phred Score
         return read
 
-    def print_summary(self):
+    def _print_summary(self):
         stderr.write("HardTrimmer finished:\n")
         stderr.write(
             "\t%i sequences were trimmed to %i wrote them to %s\n" %
@@ -54,7 +56,8 @@ class HardTrimmer(pyngsqc.Base):
             if read is not None:
                 self.num_reads += 1
                 self.writer.write(read)
-        self.print_summary()
+        if self.print_summary:
+            self._print_summary()
         return True
 
     def run_parallel(self):
@@ -66,7 +69,8 @@ class HardTrimmer(pyngsqc.Base):
             )
         runner.run()
         self.num_reads = runner.num_reads
-        self.print_summary()
+        if self.print_summary:
+            self._print_summary()
         return True
 
 

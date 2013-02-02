@@ -42,6 +42,7 @@ class QualFilter(pyngsqc.QualBase):
             compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
             verbose=False,
+            print_summary=False,
             # Local kwargs
             qual_threshold=15,
             pass_rate=0.9,
@@ -54,7 +55,8 @@ class QualFilter(pyngsqc.QualBase):
             qual_offset=qual_offset,
             compression=compression,
             deduplicate_header=deduplicate_header,
-            verbose=verbose
+            verbose=verbose,
+            print_summary=print_summary
             )
         # Initialise local variables
         self.pass_rate = float(pass_rate)
@@ -86,7 +88,7 @@ class QualFilter(pyngsqc.QualBase):
             self.num_good_reads += 1
             return True
 
-    def print_summary(self):
+    def _print_summary(self):
         stderr.write("QC check finished:\n")
         stderr.write("Processed %i reads\n" % self.num_reads)
         stderr.write(
@@ -109,7 +111,8 @@ class QualFilter(pyngsqc.QualBase):
             if self.filter_read(read):
                 self.writer.write(read)
         self.num_reads += self.reader.num_reads
-        self.print_summary()
+        if self.print_summary:
+            self._print_summary()
         self.reader.close()
         return True
 
@@ -130,7 +133,8 @@ class QualFilter(pyngsqc.QualBase):
         runner.run()
         self.num_good_reads = runner.writer.num_reads
         self.num_reads = runner.num_reads
-        self.print_summary()
+        if self.print_summary:
+            self._print_summary()
         return True
 
 

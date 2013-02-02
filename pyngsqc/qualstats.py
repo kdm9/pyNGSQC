@@ -34,6 +34,7 @@ class QualStats(pyngsqc.QualBase):
             compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
             verbose=False,
+            print_summary=False,
             # Local kwargs
             output=pyngsqc.STDOUT
             ):
@@ -44,7 +45,8 @@ class QualStats(pyngsqc.QualBase):
             qual_offset=qual_offset,
             compression=compression,
             deduplicate_header=deduplicate_header,
-            verbose=verbose
+            verbose=verbose,
+            print_summary=print_summary
             )
         # Initialise local variables
         self.output = output
@@ -150,5 +152,6 @@ class QualStats(pyngsqc.QualBase):
             self.num_reads += 1
             self._process_read(read)
         self._summarize_data()
-        self._print_summary()
+        if self.print_summary:
+            self._print_summary()
         return True

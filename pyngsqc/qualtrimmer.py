@@ -31,6 +31,7 @@ class QualTrimmer(pyngsqc.QualBase):
             compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
             verbose=False,
+            print_summary=False,
             # Local kwargs
             min_length=15,
             remove_trailing_Ns=False,
@@ -43,7 +44,8 @@ class QualTrimmer(pyngsqc.QualBase):
             qual_threshold=qual_threshold,
             compression=compression,
             deduplicate_header=deduplicate_header,
-            verbose=verbose
+            verbose=verbose,
+            print_summary=print_summary
             )
         # Initialise local variables
         self.remove_trailing_Ns = remove_trailing_Ns
@@ -64,7 +66,7 @@ class QualTrimmer(pyngsqc.QualBase):
         else:
             return read
 
-    def print_summary(self):
+    def _print_summary(self):
         stderr.write("QualTrimmer finished:\n")
         stderr.write(
                       "\t%i sequences passed QC, wrote them to %s\n" %
@@ -84,7 +86,8 @@ class QualTrimmer(pyngsqc.QualBase):
                 self.writer.write(read)
             else:
                 self.num_bad_reads += 1
-        self.print_summary()
+        if self.print_summary:
+            self._print_summary()
         return True
 
     def run_parallel(self):
@@ -102,7 +105,8 @@ class QualTrimmer(pyngsqc.QualBase):
         runner.run()
         self.num_good_reads = runner.writer.num_reads
         self.num_reads = runner.num_reads
-        self.print_summary()
+        if self.print_summary:
+            self._print_summary()
         return True
 
 

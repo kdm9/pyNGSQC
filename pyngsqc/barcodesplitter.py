@@ -35,6 +35,7 @@ class BarcodeSplitter(pyngsqc.Base):
             compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
             verbose=False,
+            print_summary=False,
             # Local kwargs
             barcode_end=FORWARD_ONLY,
             mismatch=1
@@ -45,7 +46,8 @@ class BarcodeSplitter(pyngsqc.Base):
             out_file_name=None,  # we dont have one for this class
             compression=compression,
             deduplicate_header=deduplicate_header,
-            verbose=verbose
+            verbose=verbose,
+            print_summary=print_summary
             )
         self.output_dir = output_dir
         self.mismatch = mismatch
@@ -113,7 +115,7 @@ class BarcodeSplitter(pyngsqc.Base):
                 self.barcode_files[barcode].write(read)
                 self.barcode_counts[barcode] += 1
 
-    def print_summary(self):
+    def _print_summary(self):
         stderr.write("Barcode Splitter finished:\n")
         stderr.write(
             "\t%i sequences analysed, containing %s\n" %
@@ -135,7 +137,8 @@ class BarcodeSplitter(pyngsqc.Base):
         for read in self.reader:
             self.num_reads += 1
             self._parse_read_barcode(read)
-        self.print_summary()
+        if self.print_summary:
+            self._print_summary()
         return True
 
     def run_parallel(self):
@@ -158,7 +161,8 @@ class BarcodeSplitter(pyngsqc.Base):
         runner.run()
         self.barcode_counts = runner.writer.barcode_counts
         self.num_reads = runner.num_reads
-        self.print_summary()
+        if self.print_summary:
+            self._print_summary()
         return True
 
 
@@ -321,5 +325,6 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         for paired_reads in zip(self.pair_1_reader, self.pair_2_reader):
             self.num_reads += 1
             self._parse_paired_reads_barcode(paired_reads)
-        self.print_summary()
+        if self.print_summary:
+            self._print_summary()
         return True

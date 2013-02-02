@@ -32,6 +32,7 @@ class Collapser(pyngsqc.Base):
             compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
             verbose=False,
+            print_summary=False,
             # Local kwargs
             key_length=5,
             tmp_dir=None
@@ -42,7 +43,8 @@ class Collapser(pyngsqc.Base):
             out_file_name,
             compression=compression,
             deduplicate_header=deduplicate_header,
-            verbose=verbose
+            verbose=verbose,
+            print_summary=print_summary
             )
         # Initialise local variables
         self.tmp_dir = tmp_dir
@@ -121,7 +123,7 @@ class Collapser(pyngsqc.Base):
         for file_name in self.tmp_file_names.values():
             os.remove(file_name)
 
-    def print_summary(self):
+    def _print_summary(self):
         sys.stderr.write("Collapser finished\n")
         sys.stderr.write("\tAnalysed %i reads\n" % self.num_reads)
         sys.stderr.write("\tFound %i unique reads\n" % self.num_unique_reads)
@@ -131,7 +133,8 @@ class Collapser(pyngsqc.Base):
     def run(self):
         self._split_files()
         self._colapse()
-        self.print_summary()
+        if self.print_summary:
+            self._print_summary()
         return True
 
     def run_parallel(self):
@@ -153,7 +156,8 @@ class Collapser(pyngsqc.Base):
         runner.run()
         self.barcode_counts = runner.writer.barcode_counts
         self.num_reads = runner.num_reads
-        self.print_summary()
+        if self.print_summary:
+            self._print_summary()
         return True
         self._sort()
         self.print_summary()

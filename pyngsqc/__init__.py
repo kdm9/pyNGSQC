@@ -76,7 +76,8 @@ class Base(object):
             out_file_name,
             verbose=False,
             compression=GUESS_COMPRESSION,
-            deduplicate_header=True
+            deduplicate_header=True,
+            print_summary=False
             ):
         self.in_file_name = in_file_name
         self.out_file_name = out_file_name
@@ -93,6 +94,7 @@ class Base(object):
                 self.out_file_name,
                 compression=compression
                 )
+        self.print_summary = print_summary
 
 
 class QualBase(Base):
@@ -105,6 +107,7 @@ class QualBase(Base):
             # Local args
             # Inherited kwargs
             verbose=False,
+            print_summary=False,
             compression=GUESS_COMPRESSION,
             deduplicate_header=True,
             # Local kwargs
@@ -115,6 +118,7 @@ class QualBase(Base):
             in_file_name,
             out_file_name,
             verbose=verbose,
+            print_summary=print_summary,
             compression=compression,
             deduplicate_header=True
             )
