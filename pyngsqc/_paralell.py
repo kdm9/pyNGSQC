@@ -38,12 +38,12 @@ class Process(mp.Process):
 
 
 class WriterProcess(mp.Process):
-    counter = 0
 
     def __init__(self, queue, writer):
         mp.Process.__init__(self)
         self.queue = queue
         self.writer = writer
+        self.num_good_reads = 0
 
     def run(self):
         while True:
@@ -53,7 +53,7 @@ class WriterProcess(mp.Process):
                 self.writer.close()
                 self.queue.task_done()
                 break
-            self.counter += 1
+            self.num_good_reads += 1
             self.writer.write(result)
             self.queue.task_done()
         return self.counter
@@ -94,3 +94,9 @@ class ParalellRunner(object):
         results.join()
         # Kill Writer subprocess
         results.put(None)
+
+        return (
+                num_reads,
+                writer_proc.num_good_reads,
+                num_reads - writer_proc.num_good_reads
+                )
