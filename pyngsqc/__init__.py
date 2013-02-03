@@ -214,8 +214,8 @@ class FastqWriter(_Writer):
 
     def write(self, reads):
         if len(reads) == 4:
+            self.num_reads += 1
             for line in reads:
-                self.num_reads += 1
                 self.io.write(line + "\n")
         elif len(reads) % 4 == 0:
             self.num_reads += len(reads) / 4
@@ -231,8 +231,8 @@ class FastaWriter(_Writer):
 
     def write(self, reads):
         if len(reads) == 2:
+            self.num_reads += 1
             for line in reads:
-                self.num_reads += 1
                 self.io.write(line + "\n")
         elif len(reads) % 2 == 0:
             self.num_reads += len(reads) / 2
@@ -314,7 +314,7 @@ class FastqRandomAccess(_Reader):
             deduplicate_header=True,
             compression=GUESS_COMPRESSION
             ):
-        super(FastqReader, self).__init__(
+        super(FastqRandomAccess, self).__init__(
             file_name,
             deduplicate_header,
             compression
