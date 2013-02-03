@@ -30,11 +30,9 @@ class Process(mp.Process):
                 # None is the Poison pill, means shutdown
                 self.task_queue.task_done()
                 break
-            self.counter += 1
             answer = next_task()
             self.task_queue.task_done()
             self.result_queue.put(answer)
-        return self.counter
 
 
 class WriterProcess(mp.Process):
@@ -43,7 +41,6 @@ class WriterProcess(mp.Process):
         mp.Process.__init__(self)
         self.queue = queue
         self.writer = writer
-        self.num_good_reads = 0
 
     def run(self):
         while True:
@@ -53,7 +50,6 @@ class WriterProcess(mp.Process):
                 self.writer.close()
                 self.queue.task_done()
                 break
-            self.num_good_reads += 1
             self.writer.write(result)
             self.queue.task_done()
 
@@ -65,7 +61,6 @@ class ParallelRunner(object):
         self.reader = reader
         self.writer = writer
         self.task_args = task_args
-        self.num_reads = 0
 
     def run(self):
         tasks = mp.JoinableQueue(5000)
@@ -93,9 +88,3 @@ class ParallelRunner(object):
         results.join()
         # Kill Writer subprocess
         results.put(None)
-
-        return (
-                self.num_reads,
-                writer_proc.num_good_reads,
-                self.num_reads - writer_proc.num_good_reads
-                )
