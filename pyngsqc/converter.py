@@ -32,13 +32,17 @@ class FastqToFasta(pyngsqc.Base):
             compression=compression,
             deduplicate_header=deduplicate_header
             )
+        self.writer = pyngsqc.FastaWriter(
+                self.out_file_name,
+                compression
+                )
         self.remove_header = remove_header
 
     def run(self):
         for read in self.reader:
             fasta_read = []
             if self.remove_header:
-                header = ">%i" % self.reader.num_reads
+                header = ">%i" % self.reader.stats["num_reads"]
             else:
                 header = ">%s" % read[0][1:]  # Keep fastq header
 
@@ -72,20 +76,10 @@ class ConvertPhredOffset(pyngsqc.Base):
     def run(self):
         for read in self.reader:
             in_phred_str = read[3]
-            read[3] = convert_phred_offset(
+            read[3] = pyngsqc.convert_phred_offset(
                 in_phred_str,
                 self.in_qual_offset,
                 self.out_qual_offset
                 )
 
         return True
-
-
-def convert_phred_offset(in_phred, in_qual_offset, out_qual_offset):
-    out_phred = ""
-    for char in in_phred:
-        out_phred += pyngsqc.get_phred_from_qual(
-            pyngsqc.get_qual_from_phred(char, in_qual_offset),
-            out_qual_offset
-            )
-    return out_phred

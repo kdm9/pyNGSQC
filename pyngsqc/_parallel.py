@@ -37,9 +37,11 @@ class Process(mp.Process):
 
 class WriterProcess(mp.Process):
 
-    def __init__(self, queue, writer):
+    def __init__(self, queue, output_queue, writer):
+#    def __init__(self, queue, writer):
         mp.Process.__init__(self)
         self.queue = queue
+        self.output_queue = output_queue
         self.writer = writer
 
     def run(self):
@@ -52,6 +54,7 @@ class WriterProcess(mp.Process):
                 break
             self.writer.write(result)
             self.queue.task_done()
+        self.output_queue.put(self.writer.stats)
 
 
 class ParallelRunner(object):
@@ -61,21 +64,23 @@ class ParallelRunner(object):
         self.reader = reader
         self.writer = writer
         self.task_args = task_args
+        self.num_reads = 0
+        self.num_written_reads = 0
 
     def run(self):
         tasks = mp.JoinableQueue(5000)
         results = mp.JoinableQueue(5000)
+        writer_result = mp.Queue()
         num_procs = mp.cpu_count()
 
         procs = [Process(tasks, results) for i in xrange(num_procs)]
         for proc in procs:
             proc.start()
 
-        writer_proc = WriterProcess(results, self.writer)
+        writer_proc = WriterProcess(results, writer_result, self.writer)
         writer_proc.start()
 
         for read in self.reader:
-            self.num_reads += 1
             tasks.put(self.task(read, *self.task_args))
 
         # Add a poison pill for each process
@@ -88,3 +93,5 @@ class ParallelRunner(object):
         results.join()
         # Kill Writer subprocess
         results.put(None)
+
+        self.stats = writer_result.get()

@@ -31,6 +31,7 @@ class BarcodeSplitter(pyngsqc.Base):
             in_file_name,
             output_dir,
             # Local args
+            barcode_file,
             # Inherited kwargs
             compression=pyngsqc.GUESS_COMPRESSION,
             deduplicate_header=True,
@@ -38,7 +39,8 @@ class BarcodeSplitter(pyngsqc.Base):
             print_summary=False,
             # Local kwargs
             barcode_end=FORWARD_ONLY,
-            mismatch=1
+            mismatches=0,
+            write_to_header=False
             ):
         # Initialise base class
         super(BarcodeSplitter, self).__init__(
@@ -50,10 +52,15 @@ class BarcodeSplitter(pyngsqc.Base):
             print_summary=print_summary
             )
         self.output_dir = output_dir
-        self.mismatch = mismatch
-        self.barcodes = {}
-        self.barcode_counts = {}
-        self.barcode_files = {}
+        self.mismatches = mismatches
+        self.barcodes = self._set_barcodes_from_file(barcode_file,
+                pyngsqc.SNIFF_CSV_DIALECT)
+        self.write_to_header = write_to_header
+        self.writer = _BarcodeWriter(
+                self.barcodes,
+                self.in_file_name,
+                self.output_dir
+                )
 
     def _sniff_csv_dialect(self, file_name):
         csv_fh = open(file_name, "rb")
@@ -64,139 +71,124 @@ class BarcodeSplitter(pyngsqc.Base):
         csv_fh.close()
         return csv_dialect
 
-    def set_barcodes_from_file(self, file_name, csv_dialect=csv.excel):
+    def _set_barcodes_from_file(self, file_name, csv_dialect=csv.excel):
+        barcodes = {}
         if csv_dialect == pyngsqc.SNIFF_CSV_DIALECT:
             csv_dialect = self._sniff_csv_dialect(file_name)
-        csv_fh = open(file_name, "rb")
+        csv_fh = open(file_name)
         csv_reader = csv.reader(csv_fh, dialect=csv_dialect)
         for line in csv_reader:
-            self.barcodes[line[0]] = "".join(line[1:])
+            barcodes[line[0]] = "".join(line[1:])
         csv_fh.close()
-
-    def set_barcodes_from_dict(self, barcodes):
-        self.barcodes = barcodes
-
-    def _get_barcode_writer(self, barcode):
-        if self.barcodes[barcode] == "" or self.barcodes[barcode] is None:
-            identifier = barcode
-        else:
-            # Not sure if this is a good idea, is possibility of the
-            # barcode's decsription being non-unique
-            identifier = self.barcodes[barcode]
-        if self.output_dir is None:
-            dir_path = path.dirname(self.in_file_name)
-        else:
-            dir_path = self.output_dir
-        split_path = path.basename(self.in_file_name).split(".")
-        out_path = path.join(dir_path, split_path[0] + "_%s" % identifier)
-        if len(split_path) > 1:
-            # If the path had extensions, add them
-            out_path += "." + ".".join(split_path[1:])
-        writer = pyngsqc.FastqWriter(out_path)
-        return writer
+        return barcodes
 
     def _parse_read_barcode(self, read):
         for barcode in self.barcodes:
             barcode_len = len(barcode)
             read_barcode = read[1][0:barcode_len]
-            if seq_match(barcode, read_barcode, mismatches=1):
-            #if barcode == read_barcode:
-                if barcode not in self.barcode_files:
-                    writer = self._get_barcode_writer(barcode)
-                    self.barcode_files[barcode] = writer
-                if barcode not in self.barcode_counts:
-                    self.barcode_counts[barcode] = 0
-                read[0] += " bcd:%s desc:%s" % (
-                    barcode,
-                    self.barcodes[barcode]
-                    )
+            if seq_match(barcode, read_barcode, mismatches=self.mismatches):
+                if self.write_to_header:
+                    read[0] += " bcd:%s desc:%s" % (
+                            barcode,
+                            self.barcodes[barcode]
+                            )
                 read[1] = read[1][barcode_len:]
                 read[3] = read[3][barcode_len:]
-                self.barcode_files[barcode].write(read)
-                self.barcode_counts[barcode] += 1
+                self.writer.write((barcode, read))
 
     def _print_summary(self):
         stderr.write("Barcode Splitter finished:\n")
         stderr.write(
             "\t%i sequences analysed, containing %s\n" %
-            (self.num_reads, len(self.barcode_counts))
+            (
+                self.writer.stats["num_reads"],
+                len(self.writer.stats["barcode_counts"])
+                )
             )
 
         if self.verbose:
             stderr.write("\tThe following barcodes were parsed:\n")
-            for barcode, count in self.barcode_counts.iteritems():
-                stderr.write("\t%s:\t%i\n" % (barcode, count))
+            for bcd, count in self.writer.stats["barcode_counts"].iteritems():
+                stderr.write("\t%s:\t%i\n" % (bcd, count))
 
     def run(self):
         if len(self.barcodes) < 1:
             raise ValueError(
-                "You must supply a barcode dict or file before" +
-                " run()-ing BarcodeSplitter"
-                )
-            return False
+                    "You must supply a barcode dict or file before"
+                    " run()-ing BarcodeSplitter"
+                    )
         for read in self.reader:
-            self.num_reads += 1
             self._parse_read_barcode(read)
         if self.print_summary:
             self._print_summary()
-        return True
+        return (
+                self.reader.stats["num_reads"],
+                self.writer.stats["num_reads"],
+                self.writer.stats["barcode_counts"]
+                )
 
     def run_parallel(self):
         if len(self.barcodes) < 1:
             raise ValueError(
-                "You must supply a barcode dict or file before" +
-                " run()-ing BarcodeSplitter"
-                )
-            return False
+                    "You must supply a barcode dict or file before"
+                    " run()-ing BarcodeSplitter"
+                    )
         runner = _parallel.ParallelRunner(
-            BarcodeSplitTask,
-            self.reader,
-            BarcodeWriter(
-                self.barcodes,
-                self.in_file_name,
-                self.output_dir
-                ),
-            (self.barcodes,)
-            )
+                BarcodeSplitTask,
+                self.reader,
+                self.writer,
+                (  # Task options
+                    self.barcodes,
+                    self.mismatches,
+                    self.write_to_header,
+                    )
+                )
         runner.run()
-        self.barcode_counts = runner.writer.barcode_counts
-        self.num_reads = runner.num_reads
         if self.print_summary:
             self._print_summary()
-        return True
+        return (
+                self.reader.stats["num_reads"],
+                runner.stats["num_reads"],
+                runner.stats["barcode_counts"]
+                )
 
 
 class BarcodeSplitTask(object):
 
-    def __init__(self, read, barcodes):
+    def __init__(self, read, barcodes, mismatches, write_to_header):
         self.read = read
         self.barcodes = barcodes
+        self.mismatches = mismatches
+        self.write_to_header = write_to_header
 
     def __call__(self):
         for barcode in self.barcodes:
             barcode_len = len(barcode)
             read_barcode = self.read[1][0:barcode_len]
-            if seq_match(barcode, read_barcode, mismatches=1):
-                self.read[0] += " bcd:%s desc:%s" % (
-                    barcode,
-                    str(self.barcodes[barcode])
-                    )
+            if seq_match(barcode, read_barcode, mismatches=self.mismatches):
+                if self.write_to_header:
+                    self.read[0] += " bcd:%s desc:%s" % (
+                            barcode,
+                            str(self.barcodes[barcode])
+                            )
                 self.read[1] = self.read[1][barcode_len:]
                 self.read[3] = self.read[3][barcode_len:]
                 return (barcode, self.read)
         return (None, self.read)
 
 
-class BarcodeWriter(pyngsqc.Base):
-    """
-    What the hell does this class do??
+class _BarcodeWriter(pyngsqc.Base):
+    """Provides a pyngsqc.FastqWriter compatible interface to write to many
+    files at once.
     """
     def __init__(self, barcodes, in_file_name, output_dir=None):
         self.in_file_name = in_file_name
         self.output_dir = output_dir
         self.barcodes = barcodes
-        self.barcode_counts = {}
+        self.stats = {}
+        self.stats["barcode_counts"] = {}
         self.barcode_files = {}
+        self.stats["num_reads"] = 0
 
     def _get_barcode_writer(self, barcode):
         if self.barcodes[barcode] == "" or self.barcodes[barcode] is None:
@@ -223,10 +215,12 @@ class BarcodeWriter(pyngsqc.Base):
             if barcode not in self.barcode_files:
                 self.barcode_files[barcode] = \
                  self._get_barcode_writer(barcode)
-            if barcode not in self.barcode_counts:
-                self.barcode_counts[barcode] = 0
-            self.barcode_counts[barcode] += 1
+            self.stats["num_reads"] += 1
             self.barcode_files[barcode].write(read)
+            try:
+                self.stats["barcode_counts"][barcode] += 1
+            except KeyError:
+                self.stats["barcode_counts"][barcode] = 1
 
     def close(self):
         for barcode in self.barcode_files:
@@ -327,4 +321,8 @@ class PairedBarcodeSplitter(BarcodeSplitter):
             self._parse_paired_reads_barcode(paired_reads)
         if self.print_summary:
             self._print_summary()
-        return True
+        return (
+                self.num_reads,
+                self.num_good_reads,
+                self.num_bad_reads
+                )

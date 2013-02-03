@@ -50,8 +50,6 @@ class Collapser(pyngsqc.Base):
         self.tmp_dir = tmp_dir
         self.key_length = key_length
         self.keys = []
-        self.num_non_unique_reads = 0
-        self.num_unique_reads = 0
         self.tmp_file_names = {}
         self.file_sizes = {}
 
@@ -99,99 +97,37 @@ class Collapser(pyngsqc.Base):
         return read
 
     def _colapse(self):
-        sorted_writer = pyngsqc.FastqWriter(self.out_file_name)
         for key in sorted(self.keys):
             these_reads = []
             file_name = self.tmp_file_names[key]
-
             reader = pyngsqc.FastqReader(file_name)
             for read in reader:
                 these_reads.append(self._read_to_tuple(read))
             these_reads.sort()
-            self.num_reads += reader.num_reads
             reader.close()
-
             last_read_seq = ""
             for read_tuple in these_reads:
-
                 if read_tuple[0] != last_read_seq:
                     last_read_seq = read_tuple[0]
-                    self.num_unique_reads += 1
-                    sorted_writer.write(self._tuple_to_read(read_tuple))
-                else:
-                    self.num_non_unique_reads += 1
+                    self.writer.write(self._tuple_to_read(read_tuple))
         for file_name in self.tmp_file_names.values():
             os.remove(file_name)
 
     def _print_summary(self):
         sys.stderr.write("Collapser finished\n")
-        sys.stderr.write("\tAnalysed %i reads\n" % self.num_reads)
-        sys.stderr.write("\tFound %i unique reads\n" % self.num_unique_reads)
-        sys.stderr.write("\tRemoved %i non-unique reads\n" %
-         self.num_non_unique_reads)
+        sys.stderr.write("\tAnalysed %i reads\n" % self.reader.stats["num_reads"])
+        sys.stderr.write("\tFound %i unique reads\n" % self.writer.stats["num_reads"])
+        sys.stderr.write(
+                "\tRemoved %i non-unique reads\n" %
+                self.reader.stats["num_reads"] - self.writer.stats["num_reads"]
+                )
 
     def run(self):
         self._split_files()
         self._colapse()
         if self.print_summary:
             self._print_summary()
-        return True
-
-    def run_parallel(self):
-        raise RuntimeWarning(
-            "Parallellising Collapser will use num_cpus times as much " +
-            " memory as running serially"
-            )
-        # We don't bother parallelising spliting of files, as it is mostly IO,
-        # so would be faily pointless
-        self._split_files()
-
-        sorted_writer = pyngsqc.FastqWriter(self.out_file_name)
-        files = pyngsqc.dict_to_tuples(self.tmp_file_names)
-        runner = _parallel.ParallelRunner(
-            CollapserTask,
-            files,
-            sorted_writer
-            )
-        runner.run()
-        self.barcode_counts = runner.writer.barcode_counts
-        self.num_reads = runner.num_reads
-        if self.print_summary:
-            self._print_summary()
-        return True
-        self._sort()
-        self.print_summary()
-        return True
-
-
-class CollapserTask(Collapser):
-
-    def __init__(self, file_tuple):
-        self.file_tuple = file_tuple
-        self.num_reads = 0L
-        self.num_non_unique_reads = 0
-        self.num_unique_reads = 0
-
-    def call(self):
-        key, file_name = self.file_tuple
-        these_reads = []
-        these_unique_reads = []
-
-        reader = pyngsqc.FastqReader(file_name)
-        for read in reader:
-            these_reads.append(self._read_to_tuple(read))
-        these_reads.sort()
-        self.num_reads += reader.num_reads
-        reader.close()
-
-        last_read_seq = ""
-        for read_tuple in these_reads:
-
-            if read_tuple[0] != last_read_seq:
-                last_read_seq = read_tuple[0]
-                self.num_unique_reads += 1
-                for line in self._tuple_to_read(read_tuple):
-                    these_unique_reads.append(line)
-            else:
-                self.num_non_unique_reads += 1
-        os.remove(file_name)
+        return (
+                self.reader.stats["num_reads"],
+                self.writer.stats["num_reads"]
+                )

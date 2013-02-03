@@ -47,18 +47,20 @@ class HardTrimmer(pyngsqc.Base):
         stderr.write("HardTrimmer finished:\n")
         stderr.write(
             "\t%i sequences were trimmed to %i wrote them to %s\n" %
-            (self.num_reads, self.length, self.out_file_name)
+            (self.writer.stats["num_reads"], self.length, self.out_file_name)
             )
 
     def run(self):
         for read in self.reader:
             read = self.trim_read(read)
-            if read is not None:
-                self.num_reads += 1
+            if len(read) == 4:
                 self.writer.write(read)
         if self.print_summary:
             self._print_summary()
-        return True
+        return (
+                self.reader.stats["num_reads"],
+                self.writer.stats["num_reads"]
+                )
 
     def run_parallel(self):
         runner = _parallel.ParallelRunner(
@@ -68,10 +70,12 @@ class HardTrimmer(pyngsqc.Base):
             (self.length,)
             )
         runner.run()
-        self.num_reads = runner.num_reads
         if self.print_summary:
             self._print_summary()
-        return True
+        return (
+                self.reader.stats["num_reads"],
+                runner.stats["num_reads"]
+                )
 
 
 class HardTrimmerTask(HardTrimmer):

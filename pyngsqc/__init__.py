@@ -190,7 +190,8 @@ class _GenericFileHandle(object):
 class _IOObject(object):
 
     def __init__(self):
-        pass
+        self.stats = {}
+        self.stats["num_reads"] = 0
 
     def close(self):
         self.io.close()
@@ -199,7 +200,7 @@ class _IOObject(object):
 class _Writer(_IOObject):
 
     def __init__(self, file_name, compression=GUESS_COMPRESSION):
-        self.num_reads = 0L
+        super(_Writer, self).__init__()
         self.io = _GenericFileHandle(
             file_name,
             mode=_GenericFileHandle.WRITE,
@@ -214,11 +215,11 @@ class FastqWriter(_Writer):
 
     def write(self, reads):
         if len(reads) == 4:
-            self.num_reads += 1
+            self.stats["num_reads"] += 1
             for line in reads:
                 self.io.write(line + "\n")
         elif len(reads) % 4 == 0:
-            self.num_reads += len(reads) / 4
+            self.stats["num_reads"] += len(reads) / 4
             for line in reads:
                 self.io.write(line + "\n")
         else:
@@ -231,11 +232,11 @@ class FastaWriter(_Writer):
 
     def write(self, reads):
         if len(reads) == 2:
-            self.num_reads += 1
+            self.stats["num_reads"] += 1
             for line in reads:
                 self.io.write(line + "\n")
         elif len(reads) % 2 == 0:
-            self.num_reads += len(reads) / 2
+            self.stats["num_reads"] += len(reads) / 2
             for line in reads:
                 self.io.write(line + "\n")
         else:
@@ -250,6 +251,7 @@ class _Reader(_IOObject):
             deduplicate_header=True,
             compression=GUESS_COMPRESSION
             ):
+        super(_Reader, self).__init__()
         self.file_name = file_name
         self.deduplicate_header = deduplicate_header
         self.io = _GenericFileHandle(
@@ -257,7 +259,7 @@ class _Reader(_IOObject):
             mode=_GenericFileHandle.READ,
             compression=compression
             ).get()
-        self.num_reads = 0L
+        self.stats["num_reads"] = 0L
 
     def __iter__(self):
         return self
@@ -301,7 +303,7 @@ class FastqReader(_Reader):
                     # Save disk space, remove duplicate headers
                     if this_read[0][1:] == this_read[2][1:]:
                         this_read[2] = "+"
-                self.num_reads += 1
+                self.stats["num_reads"] += 1
                 return this_read
         raise StopIteration
 
@@ -339,7 +341,7 @@ class FastqRandomAccess(_Reader):
             # Save space, remove duplicate headers
             if this_read[0][1:] == this_read[0][2:]:
                 this_read[2] = "+"
-        self.num_reads += 1
+        self.stats["num_reads"] += 1
         return this_read
 
     def _build_cache(self):

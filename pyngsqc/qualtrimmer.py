@@ -62,64 +62,64 @@ class QualTrimmer(pyngsqc.QualBase):
                 read[1] = read[1][:-1]  # Base
                 read[3] = read[3][:-1]  # Phred Score
         if len(read[1]) < self.min_length:
-            return None
+            return ()
         else:
             return read
 
     def _print_summary(self):
         stderr.write("QualTrimmer finished:\n")
         stderr.write(
-                      "\t%i sequences passed QC, wrote them to %s\n" %
-                      (self.num_good_reads, self.out_file_name)
-                    )
+                "\t%i sequences passed QC, wrote them to %s\n" %
+                (self.writer.stats["num_reads"], self.out_file_name)
+                )
         stderr.write(
-                      "\t%i sequences failed QC, and were ignored\n" %
-                      self.num_bad_reads,
-                    )
+                "\t%i sequences failed QC, and were ignored\n" %
+                self.reader.stats["num_reads"] - self.writer.stats["num_reads"]
+                )
 
     def run(self):
         for read in self.reader:
-            self.num_reads += 1
             read = self.trim_read(read)
-            if read is not None:
-                self.num_good_reads += 1
+            if len(read) == 4:  # If it's a valid read
                 self.writer.write(read)
-            else:
-                self.num_bad_reads += 1
         if self.print_summary:
             self._print_summary()
-        return True
+        return (
+                self.reader.stats["num_reads"],
+                self.writer.stats["num_reads"],
+                )
 
     def run_parallel(self):
         runner = _parallel.ParallelRunner(
-            QualTrimmerTask,
-            self.reader,
-            self.writer,
-            (
-                self.qual_threshold,
-                self.qual_offset,
-                self.min_length,
-                self.remove_trailing_Ns,
+                QualTrimmerTask,
+                self.reader,
+                self.writer,
+                (  # Task options
+                    self.qual_threshold,
+                    self.qual_offset,
+                    self.min_length,
+                    self.remove_trailing_Ns
+                    )
                 )
-            )
         runner.run()
-        self.num_good_reads = runner.writer.num_reads
-        self.num_reads = runner.num_reads
         if self.print_summary:
             self._print_summary()
-        return True
+        return (
+                self.reader.stats["num_reads"],
+                runner.stats["num_reads"]
+                )
 
 
 class QualTrimmerTask(QualTrimmer):
 
     def __init__(
-                 self,
-                 read,
-                 qual_threshold,
-                 qual_offset,
-                 min_length,
-                 remove_trailing_Ns,
-                ):
+            self,
+            read,
+            qual_threshold,
+            qual_offset,
+            min_length,
+            remove_trailing_Ns,
+            ):
         self.read = read
         self.qual_threshold = qual_threshold
         self.qual_offset = qual_offset

@@ -79,13 +79,10 @@ class QualFilter(pyngsqc.QualBase):
     def _passes_qc(self, read):
         if self.max_Ns != -1 and \
          int(pyngsqc.num_Ns_in_read(read)) > self.max_Ns:
-            self.num_bad_reads += 1
             return False
         elif not self._passes_score_qc(read):
-            self.num_bad_reads += 1
             return False
         else:
-            self.num_good_reads += 1
             return True
 
     def _print_summary(self):
@@ -93,11 +90,11 @@ class QualFilter(pyngsqc.QualBase):
         stderr.write("Processed %i reads\n" % self.num_reads)
         stderr.write(
             "\t%i sequences passed QC, wrote them to %s\n" %
-            (self.num_good_reads, self.out_file_name)
+            (self.reader.stats["num_reads"], self.out_file_name)
             )
         stderr.write(
             "\t%i sequences failed QC, and were ignored\n" %
-            self.num_bad_reads,
+            self.writer.stats["num_reads"]
             )
 
     def filter_read(self, read):
@@ -110,44 +107,46 @@ class QualFilter(pyngsqc.QualBase):
         for read in self.reader:
             if self.filter_read(read):
                 self.writer.write(read)
-        self.num_reads += self.reader.num_reads
         if self.print_summary:
             self._print_summary()
         self.reader.close()
-        return True
+        return (
+                self.reader.stats["num_reads"],
+                self.writer.stats["num_reads"]
+                )
+
 
     def run_parallel(self):
-        task_args = (
-            self.pass_rate,
-            self.qual_threshold,
-            self.qual_offset,
-            self.max_Ns
-            )
-
         runner = _parallel.ParallelRunner(
             QualFilterTask,
             self.reader,
             self.writer,
-            task_args
+            (  # Task Options
+                self.pass_rate,
+                self.qual_threshold,
+                self.qual_offset,
+                self.max_Ns
+                )
             )
         runner.run()
-        self.num_good_reads = runner.writer.num_reads
-        self.num_reads = runner.num_reads
         if self.print_summary:
             self._print_summary()
-        return True
+        return (
+                self.reader.stats["num_reads"],
+                runner.stats["num_reads"],
+                )
 
 
 class QualFilterTask(QualFilter):
 
     def __init__(
-                 self,
-                 read,
-                 qual_threshold,
-                 pass_rate,
-                 max_Ns,
-                 qual_offset,
-                ):
+            self,
+            read,
+            qual_threshold,
+            pass_rate,
+            max_Ns,
+            qual_offset,
+            ):
         self.read = read
         self.pass_rate = float(pass_rate)
         self.qual_threshold = qual_threshold
