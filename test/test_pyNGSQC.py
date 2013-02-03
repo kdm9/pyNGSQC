@@ -51,8 +51,9 @@ class Tester(unittest.TestCase):
             qual_threshold=20,
             qual_offset=33
             )
-        retval = qf.run_parallel()
-        self.assertEqual(retval, True)
+        num_read, num_written = qf.run_parallel()
+        self.assertEqual(num_read, 1000)
+        self.assertEqual(num_written, 996)
 
     def testQualFilter(self):
         qf = qfil.QualFilter(
@@ -61,16 +62,18 @@ class Tester(unittest.TestCase):
             qual_threshold=20,
             qual_offset=33
             )
-        retval = qf.run()
-        self.assertEqual(retval, True)
+        num_read, num_written = qf.run()
+        self.assertEqual(num_read, 1000)
+        self.assertEqual(num_written, 996)
 
     def testCollapser(self):
         co = col.Collapser(
             in_file,
             out_dir + "col.fastq",
             )
-        retval = co.run()
-        self.assertEqual(retval, True)
+        num_read, num_written = co.run()
+        self.assertEqual(num_read, 1000)
+        self.assertEqual(num_written, 992)
 
     def testQualTrimmerParallel(self):
         qt = qtrim.QualTrimmer(
@@ -80,8 +83,9 @@ class Tester(unittest.TestCase):
             min_length=10,
             qual_offset=33
             )
-        retval = qt.run_parallel()
-        self.assertEqual(retval, True)
+        num_read, num_written = qt.run_parallel()
+        self.assertEqual(num_read, 1000)
+        self.assertEqual(num_written, 1000)
 
     def testQualTrimmer(self):
         qt = qtrim.QualTrimmer(
@@ -91,35 +95,71 @@ class Tester(unittest.TestCase):
             min_length=10,
             qual_offset=33
             )
-        retval = qt.run()
-        self.assertEqual(retval, True)
+        num_read, num_written = qt.run()
+        self.assertEqual(num_read, 1000)
+        self.assertEqual(num_written, 1000)
 
     def testBarcodeSplitterParallel(self):
-        bc = bcs.BarcodeSplitter(in_file, out_dir)
-        bc.set_barcodes_from_file(prefix + "barcodes.csv", csv.excel)
-        retval = bc.run_parallel()
-        self.assertEqual(retval, True)
+        bc = bcs.BarcodeSplitter(in_file, out_dir, prefix + "barcodes.csv")
+        num_read, num_written, barcode_counts = bc.run_parallel()
+        expected_barcode_counts = {
+                'CACACTTGAATC': 332,
+                'CACCGATGTATC': 6,
+                'CACATCACGATC': 7,
+                'CACCAGATCATC': 281,
+                'CACTTAGGCATC': 7,
+                'CACGATCAGATC': 270,
+                'CACGCCAATATC': 35,
+                'CACTGACCAATC': 35,
+                'CACACAGTGATC': 21
+                }
+        self.assertEqual(num_read, 1000)
+        self.assertEqual(num_written, 994)
+        self.assertEqual(barcode_counts, expected_barcode_counts)
 
     def testBarcodeSplitter(self):
-        bc = bcs.BarcodeSplitter(in_file, out_dir)
-        bc.set_barcodes_from_file(prefix + "barcodes.csv", csv.excel)
-        retval = bc.run()
-        self.assertEqual(retval, True)
+        bc = bcs.BarcodeSplitter(in_file, out_dir, prefix + "barcodes.csv")
+        num_read, num_written, barcode_counts = bc.run()
+        expected_barcode_counts = {
+                'CACACTTGAATC': 332,
+                'CACCGATGTATC': 6,
+                'CACATCACGATC': 7,
+                'CACCAGATCATC': 281,
+                'CACTTAGGCATC': 7,
+                'CACGATCAGATC': 270,
+                'CACGCCAATATC': 35,
+                'CACTGACCAATC': 35,
+                'CACACAGTGATC': 21
+                }
+        self.assertEqual(num_read, 1000)
+        self.assertEqual(num_written, 994)
+        self.assertEqual(barcode_counts, expected_barcode_counts)
+
+    def testHardTrimmer(self):
+        ht = htrim.HardTrimmer(in_file, out_dir + "ht.fastq", length=30)
+        num_read, num_written = ht.run()
+        self.assertEqual(num_read, 1000)
+        self.assertEqual(num_written, 1000)
 
     def testHardTrimmerParallel(self):
         ht = htrim.HardTrimmer(in_file, out_dir + "ht.fastq", length=30)
-        retval = ht.run_parallel()
-        self.assertEqual(retval, True)
+        num_read, num_written = ht.run_parallel()
+        self.assertEqual(num_read, 1000)
+        self.assertEqual(num_written, 1000)
 
     def testQualStats(self):
         qs = qstat.QualStats(in_file, qual_offset=33)
-        retval = qs.run()
-        self.assertEqual(retval, True)
+        self.assertTrue(qs.run())
+#        num_read, num_written = qs.run()
+#        self.assertEqual(num_read, 1000)
+#        self.assertEqual(num_written, 1000)
 
     def testFastqToFasta(self):
         ftf = conv.FastqToFasta(in_file, out_dir + "fasta.fasta")
-        retval = ftf.run()
-        self.assertEqual(retval, True)
+        self.assertTrue(ftf.run())
+#        num_read, num_written = ftf.run()
+#        self.assertEqual(num_read, 1000)
+#        self.assertEqual(num_written, 1000)
 
 
 def suite():
