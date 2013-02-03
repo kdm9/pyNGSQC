@@ -90,7 +90,7 @@ class Base(object):
                     deduplicate_header=deduplicate_header
                     )
         if self.out_file_name is not None: 
-            self.writer = FastaWriter(
+            self.writer = FastqWriter(
                 self.out_file_name,
                 compression=compression
                 )
