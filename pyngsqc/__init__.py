@@ -479,3 +479,13 @@ def tuples_to_dict(tuples):
     for key, value in tuples:
         this_dict[key] = value
     return this_dict
+
+
+def convert_phred_offset(in_phred, in_qual_offset, out_qual_offset):
+    out_phred = ""
+    for char in in_phred:
+        out_phred += pyngsqc.get_phred_from_qual(
+            pyngsqc.get_qual_from_phred(char, in_qual_offset),
+            out_qual_offset
+            )
+    return out_phred
