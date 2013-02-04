@@ -63,28 +63,6 @@ class QualFilter(pyngsqc.QualBase):
         self.qual_threshold = qual_threshold
         self.max_Ns = max_Ns
 
-    def _passes_score_qc(self, read):
-        qual = read[3]
-        read_len = len(qual)
-        low_scores = 0
-        for p in qual:
-            if pyngsqc.get_qual_from_phred(p, self.qual_offset) < self.qual_threshold:
-                low_scores += 1
-        this_pass_rate = 1.0 - float(low_scores) / float(read_len)
-        if this_pass_rate <= self.pass_rate:
-            return False
-        else:
-            return True
-
-    def _passes_qc(self, read):
-        if self.max_Ns != -1 and \
-         int(pyngsqc.num_Ns_in_read(read)) > self.max_Ns:
-            return False
-        elif not self._passes_score_qc(read):
-            return False
-        else:
-            return True
-
     def _print_summary(self):
         stderr.write("QC check finished:\n")
         stderr.write("Processed %i reads\n" % self.num_reads)
@@ -98,7 +76,24 @@ class QualFilter(pyngsqc.QualBase):
             )
 
     def filter_read(self, read):
-        if self._passes_qc(read):
+        def _passes_qc(read):
+            qual = read[3]
+            read_len = len(qual)
+            low_scores = 0
+            for p in qual:
+                if pyngsqc.get_qual_from_phred(p, self.qual_offset) <\
+                        self.qual_threshold:
+                    low_scores += 1
+            this_pass_rate = 1.0 - float(low_scores) / float(read_len)
+            if this_pass_rate <= self.pass_rate:
+                return False
+            elif self.max_Ns != -1 and \
+             int(pyngsqc.num_Ns_in_read(read)) > self.max_Ns:
+                return False
+            else:
+                return True
+
+        if _passes_qc(read):
             return read
         else:
             return []
