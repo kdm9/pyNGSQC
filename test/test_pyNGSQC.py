@@ -49,7 +49,9 @@ class Tester(unittest.TestCase):
             in_file,
             out_dir + "qf.fastq",
             qual_threshold=20,
-            qual_offset=33
+            qual_offset=33,
+            pass_rate=0.9,
+            max_Ns=-1,
             )
         num_read, num_written = qf.run_parallel()
         self.assertEqual(num_read, 1000)
@@ -60,7 +62,9 @@ class Tester(unittest.TestCase):
             in_file,
             out_dir + "qf.fastq",
             qual_threshold=20,
-            qual_offset=33
+            qual_offset=33,
+            pass_rate=0.9,
+            max_Ns=-1,
             )
         num_read, num_written = qf.run()
         self.assertEqual(num_read, 1000)
