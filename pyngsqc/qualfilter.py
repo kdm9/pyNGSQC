@@ -137,10 +137,10 @@ class QualFilterTask(QualFilter):
     def __init__(
             self,
             read,
-            qual_threshold,
             pass_rate,
-            max_Ns,
+            qual_threshold,
             qual_offset,
+            max_Ns,
             ):
         self.read = read
         self.pass_rate = float(pass_rate)
