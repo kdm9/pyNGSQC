@@ -30,12 +30,12 @@ class HardTrimmer(pyngsqc.Base):
             print_summary=False
             ):
         super(HardTrimmer, self).__init__(
-            in_file_name,
-            out_file_name,
-            verbose=verbose,
-            compression=compression,
-            print_summary=print_summary
-            )
+                in_file_name,
+                out_file_name,
+                verbose=verbose,
+                compression=compression,
+                print_summary=print_summary
+                )
         self.length = length
 
     def trim_read(self, read):
@@ -46,9 +46,12 @@ class HardTrimmer(pyngsqc.Base):
     def _print_summary(self):
         stderr.write("HardTrimmer finished:\n")
         stderr.write(
-            "\t%i sequences were trimmed to %i wrote them to %s\n" %
-            (self.writer.stats["num_reads"], self.length, self.out_file_name)
-            )
+                "\t%i sequences were trimmed to %i wrote them to %s\n" % (
+                    self.writer.stats["num_reads"],
+                    self.length,
+                    self.out_file_name
+                    )
+                )
 
     def run(self):
         for read in self.reader:
@@ -64,11 +67,11 @@ class HardTrimmer(pyngsqc.Base):
 
     def run_parallel(self):
         runner = _parallel.ParallelRunner(
-            HardTrimmerTask,
-            self.reader,
-            self.writer,
-            (self.length,)
-            )
+                HardTrimmerTask,
+                self.reader,
+                self.writer,
+                (self.length,)
+                )
         runner.run()
         if self.print_summary:
             self._print_summary()

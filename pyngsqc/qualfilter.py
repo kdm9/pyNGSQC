@@ -50,14 +50,14 @@ class QualFilter(pyngsqc.QualBase):
             ):
         # Initialise base class
         super(QualFilter, self).__init__(
-            in_file_name,
-            out_file_name,
-            qual_offset=qual_offset,
-            compression=compression,
-            deduplicate_header=deduplicate_header,
-            verbose=verbose,
-            print_summary=print_summary
-            )
+                in_file_name,
+                out_file_name,
+                qual_offset=qual_offset,
+                compression=compression,
+                deduplicate_header=deduplicate_header,
+                verbose=verbose,
+                print_summary=print_summary
+                )
         # Initialise local variables
         self.pass_rate = float(pass_rate)
         self.qual_threshold = qual_threshold
@@ -67,13 +67,13 @@ class QualFilter(pyngsqc.QualBase):
         stderr.write("QC check finished:\n")
         stderr.write("Processed %i reads\n" % self.num_reads)
         stderr.write(
-            "\t%i sequences passed QC, wrote them to %s\n" %
-            (self.reader.stats["num_reads"], self.out_file_name)
-            )
+                "\t%i sequences passed QC, wrote them to %s\n" %
+                (self.reader.stats["num_reads"], self.out_file_name)
+                )
         stderr.write(
-            "\t%i sequences failed QC, and were ignored\n" %
-            self.writer.stats["num_reads"]
-            )
+                "\t%i sequences failed QC, and were ignored\n" %
+                self.writer.stats["num_reads"]
+                )
 
     def filter_read(self, read):
         def _passes_qc(read):
@@ -113,16 +113,16 @@ class QualFilter(pyngsqc.QualBase):
 
     def run_parallel(self):
         runner = _parallel.ParallelRunner(
-            QualFilterTask,
-            self.reader,
-            self.writer,
-            (  # Task Options
-                self.pass_rate,
-                self.qual_threshold,
-                self.qual_offset,
-                self.max_Ns
+                QualFilterTask,
+                self.reader,
+                self.writer,
+                (  # Task Options
+                    self.pass_rate,
+                    self.qual_threshold,
+                    self.qual_offset,
+                    self.max_Ns
+                    )
                 )
-            )
         runner.run()
         if self.print_summary:
             self._print_summary()

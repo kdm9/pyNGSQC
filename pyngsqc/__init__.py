@@ -44,24 +44,24 @@ SNIFF_CSV_DIALECT = 0
 STDOUT = 0
 
 AMBIGUITY_DICT = {
-    "A": ["A", "W", "M", "R", "N", "D", "H", "V"],
-    "C": ["C", "S", "M", "Y", "N", "B", "H", "V"],
-    "G": ["G", "S", "K", "R", "N", "B", "D", "V"],
-    "T": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
-    "U": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
-    "N": ["A", "G", "C", "T", "U", "W", "K", "M", "R", "Y", "N", "B", "D", "H",
-          "V"],
-    "B": ["C", "G", "T", "U"],
-    "D": ["A", "G", "T", "U"],
-    "H": ["A", "C", "T", "U"],
-    "V": ["A", "C", "G"],
-    "K": ["G", "T", "U"],
-    "M": ["A", "C"],
-    "S": ["G", "C"],
-    "W": ["A", "T", "U"],
-    "Y": ["C", "T", "U"],
-    "R": ["A", "G"]
-    }
+        "A": ["A", "W", "M", "R", "N", "D", "H", "V"],
+        "C": ["C", "S", "M", "Y", "N", "B", "H", "V"],
+        "G": ["G", "S", "K", "R", "N", "B", "D", "V"],
+        "T": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
+        "U": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
+        "N": ["A", "G", "C", "T", "U", "W", "K", "M", "R", "Y", "N", "B",
+            "D", "H", "V"],
+        "B": ["C", "G", "T", "U"],
+        "D": ["A", "G", "T", "U"],
+        "H": ["A", "C", "T", "U"],
+        "V": ["A", "C", "G"],
+        "K": ["G", "T", "U"],
+        "M": ["A", "C"],
+        "S": ["G", "C"],
+        "W": ["A", "T", "U"],
+        "Y": ["C", "T", "U"],
+        "R": ["A", "G"]
+        }
 
 
 class Base(object):
@@ -115,13 +115,13 @@ class QualBase(Base):
             qual_threshold=DEFAULT_QUAL_THRESHOLD
             ):
         super(QualBase, self).__init__(
-            in_file_name,
-            out_file_name,
-            verbose=verbose,
-            print_summary=print_summary,
-            compression=compression,
-            deduplicate_header=True
-            )
+                in_file_name,
+                out_file_name,
+                verbose=verbose,
+                print_summary=print_summary,
+                compression=compression,
+                deduplicate_header=True
+                )
         self.qual_offset = qual_offset
         self.qual_threshold = qual_threshold
 
@@ -143,9 +143,9 @@ class _GenericFileHandle(object):
             self.compression = compression
         else:
             raise ValueError(
-                "%i is not a valid compression mode" %
-                compression
-                )
+                    "%i is not a valid compression mode" %
+                    compression
+                    )
 
     def _guess_compression(self, file_name):
         path, ext = os.path.splitext(file_name)
@@ -202,10 +202,10 @@ class _Writer(_IOObject):
     def __init__(self, file_name, compression=GUESS_COMPRESSION):
         super(_Writer, self).__init__()
         self.io = _GenericFileHandle(
-            file_name,
-            mode=_GenericFileHandle.WRITE,
-            compression=compression
-            ).get()
+                file_name,
+                mode=_GenericFileHandle.WRITE,
+                compression=compression
+                ).get()
 
 
 class FastqWriter(_Writer):
@@ -274,10 +274,10 @@ class FastqReader(_Reader):
             compression=GUESS_COMPRESSION
             ):
         super(FastqReader, self).__init__(
-            file_name,
-            deduplicate_header,
-            compression
-            )
+                file_name,
+                deduplicate_header,
+                compression
+                )
 
     def next(self):
         this_read = []
@@ -317,10 +317,10 @@ class FastqRandomAccess(_Reader):
             compression=GUESS_COMPRESSION
             ):
         super(FastqRandomAccess, self).__init__(
-            file_name,
-            deduplicate_header,
-            compression
-            )
+                file_name,
+                deduplicate_header,
+                compression
+                )
         self.record_positions = array("L")
         self._build_cache()
 
@@ -375,8 +375,11 @@ def base_match(base_1, base_2, allow_ambiguity=True):
         try:
             result = base_2 in AMBIGUITY_DICT[base_1]
         except KeyError:
-            raise ValueError("(%s, %s) is an invalid base pair" %
-             (base_1, base_2))
+            raise ValueError("(%s, %s) is an invalid base pair" % (
+                    base_1,
+                    base_2
+                    )
+                )
     else:
         result = base_2 == base_1
     return result
@@ -417,9 +420,9 @@ def get_qual_from_phred(phred, offset):
     qual = ord(phred) - offset
     if qual < 0:
         raise ValueError(
-            "Invalid quality score %i from phred %s (ord %i)" %
-            (qual, phred, ord(phred))
-            )
+                "Invalid quality score %i from phred %s (ord %i)" %
+                (qual, phred, ord(phred))
+                )
     return qual
 
 
@@ -487,7 +490,7 @@ def convert_phred_offset(in_phred, in_qual_offset, out_qual_offset):
     out_phred = ""
     for char in in_phred:
         out_phred += pyngsqc.get_phred_from_qual(
-            pyngsqc.get_qual_from_phred(char, in_qual_offset),
-            out_qual_offset
-            )
+                pyngsqc.get_qual_from_phred(char, in_qual_offset),
+                out_qual_offset
+                )
     return out_phred

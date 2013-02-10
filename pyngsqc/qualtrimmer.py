@@ -38,15 +38,15 @@ class QualTrimmer(pyngsqc.QualBase):
             ):
         # Initialise base class
         super(QualTrimmer, self).__init__(
-            in_file_name,
-            out_file_name,
-            qual_offset=qual_offset,
-            qual_threshold=qual_threshold,
-            compression=compression,
-            deduplicate_header=deduplicate_header,
-            verbose=verbose,
-            print_summary=print_summary
-            )
+                in_file_name,
+                out_file_name,
+                qual_offset=qual_offset,
+                qual_threshold=qual_threshold,
+                compression=compression,
+                deduplicate_header=deduplicate_header,
+                verbose=verbose,
+                print_summary=print_summary
+                )
         # Initialise local variables
         self.remove_trailing_Ns = remove_trailing_Ns
         self.min_length = min_length

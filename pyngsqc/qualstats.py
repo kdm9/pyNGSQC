@@ -40,14 +40,14 @@ class QualStats(pyngsqc.QualBase):
             ):
         # Initialise base class
         super(QualStats, self).__init__(
-            in_file_name,
-            out_file_name = None,  # This class doesn't have one
-            qual_offset=qual_offset,
-            compression=compression,
-            deduplicate_header=deduplicate_header,
-            verbose=verbose,
-            print_summary=print_summary
-            )
+                in_file_name,
+                out_file_name = None,  # This class doesn't have one
+                qual_offset=qual_offset,
+                compression=compression,
+                deduplicate_header=deduplicate_header,
+                verbose=verbose,
+                print_summary=print_summary
+                )
         # Initialise local variables
         self.output = output
         self.positions = []
@@ -55,33 +55,33 @@ class QualStats(pyngsqc.QualBase):
         # Set default dicts for the position_bases and position_qualities lists
         bases = list("AGCTN")
         self.columns = [
-            "count",
-            "min",
-            "max",
-            "sum",
-            "mean",
-            "Q1",
-            "median",
-            "Q3",
-            "IQR",
-            "lW",
-            "rW",
-            "A",
-            "C",
-            "G",
-            "T",
-            "N",
-            "total",
-            "GC"
-            ]
+                "count",
+                "min",
+                "max",
+                "sum",
+                "mean",
+                "Q1",
+                "median",
+                "Q3",
+                "IQR",
+                "lW",
+                "rW",
+                "A",
+                "C",
+                "G",
+                "T",
+                "N",
+                "total",
+                "GC"
+                ]
         self.initial_dict = {
-            "bases": dict.fromkeys(bases, 0),
-            # 126 is the last printable character in ASCII, store as list as
-            # keys are integers, saves mem
-            "scores": [0 for iii in xrange(self.qual_offset, 126)],
-            # Dict of summary data to be printed
-            "summary": dict.fromkeys(self.columns, 0.0)
-            }
+                "bases": dict.fromkeys(bases, 0),
+                # 126 is the last printable character in ASCII, store as list
+                # as keys are integers, saves mem
+                "scores": [0 for iii in xrange(self.qual_offset, 126)],
+                # Dict of summary data to be printed
+                "summary": dict.fromkeys(self.columns, 0.0)
+                }
 
     def _print_summary(self):
         print
@@ -108,17 +108,17 @@ class QualStats(pyngsqc.QualBase):
              position["summary"]["count"]
             # Quartiles, median, iqr and whiskers
             position["summary"]["Q1"] = pyngsqc.percentile_from_counts(
-                position["scores"],
-                0.25
-                )
+                    position["scores"],
+                    0.25
+                    )
             position["summary"]["median"] = pyngsqc.percentile_from_counts(
-                position["scores"],
-                0.5
-                )
+                    position["scores"],
+                    0.5
+                    )
             position["summary"]["Q3"] = pyngsqc.percentile_from_counts(
-                position["scores"],
-                0.75
-                )
+                    position["scores"],
+                    0.75
+                    )
             position["summary"]["IQR"] = position["summary"]["Q3"] - \
              position["summary"]["Q1"]
 

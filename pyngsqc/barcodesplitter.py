@@ -53,8 +53,10 @@ class BarcodeSplitter(pyngsqc.Base):
             )
         self.output_dir = output_dir
         self.mismatches = mismatches
-        self.barcodes = self._set_barcodes_from_file(barcode_file,
-                pyngsqc.SNIFF_CSV_DIALECT)
+        self.barcodes = self._set_barcodes_from_file(
+                barcode_file,
+                pyngsqc.SNIFF_CSV_DIALECT
+                )
         self.write_to_header = write_to_header
         self.writer = _BarcodeWriter(
                 self.barcodes,
@@ -99,12 +101,11 @@ class BarcodeSplitter(pyngsqc.Base):
     def _print_summary(self):
         stderr.write("Barcode Splitter finished:\n")
         stderr.write(
-            "\t%i sequences analysed, containing %s\n" %
-            (
-                self.writer.stats["num_reads"],
-                len(self.writer.stats["barcode_counts"])
+                "\t%i sequences analysed, containing %s\n" % (
+                    self.writer.stats["num_reads"],
+                    len(self.writer.stats["barcode_counts"])
+                    )
                 )
-            )
 
         if self.verbose:
             stderr.write("\tThe following barcodes were parsed:\n")
@@ -229,24 +230,24 @@ class _BarcodeWriter(pyngsqc.Base):
 
 class PairedBarcodeSplitter(BarcodeSplitter):
     def __init__(
-                 self,
-                 pair_1_file_name,
-                 pair_2_file_name,
-                 output_dir=None,
-                 compression=pyngsqc.GUESS_COMPRESSION,
-                 verbose=False
-                ):
+            self,
+            pair_1_file_name,
+            pair_2_file_name,
+            output_dir=None,
+            compression=pyngsqc.GUESS_COMPRESSION,
+            verbose=False
+            ):
         self.pair_1_file_name = pair_1_file_name
         self.pair_2_file_name = pair_2_file_name
         self.output_dir = output_dir
         self.pair_1_reader = pyngsqc.FastqReader(
-            self.pair_1_file_name,
-            compression=compression
-            )
+                self.pair_1_file_name,
+                compression=compression
+                )
         self.pair_2_reader = pyngsqc.FastqReader(
-            self.pair_2_file_name,
-            compression=compression
-            )
+                self.pair_2_file_name,
+                compression=compression
+                )
         self.verbose = verbose
         self.barcodes = {}
         self.barcode_counts = {}
@@ -269,9 +270,9 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         # Read 1
         read_1_split_path = path.basename(self.pair_1_file_name).split(".")
         out_path = path.join(
-            dir_path,
-            read_1_split_path[0] + "_%s" % identifier
-            )
+                dir_path,
+                read_1_split_path[0] + "_%s" % identifier
+                )
         if len(read_1_split_path) > 1:
             # If the path had extensions, add them
             out_path += "." + ".".join(read_1_split_path[1:])
@@ -280,9 +281,9 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         # Read 2
         read_2_split_path = path.basename(self.pair_1_file_name).split(".")
         out_path = path.join(
-            dir_path,
-            read_2_split_path[0] + "_%s" % identifier
-            )
+                dir_path,
+                read_2_split_path[0] + "_%s" % identifier
+                )
 
         # If the path had extensions, add them
         if len(read_2_split_path) > 1:
@@ -313,9 +314,9 @@ class PairedBarcodeSplitter(BarcodeSplitter):
     def run(self):
         if len(self.barcodes) < 1:
             raise ValueError(
-                "You must supply a barcode dict or file before" +
-                " run()-ing BarcodeSplitter"
-                )
+                    "You must supply a barcode dict or file before"
+                    " run()-ing BarcodeSplitter"
+                    )
         for paired_reads in zip(self.pair_1_reader, self.pair_2_reader):
             self.num_reads += 1
             self._parse_paired_reads_barcode(paired_reads)

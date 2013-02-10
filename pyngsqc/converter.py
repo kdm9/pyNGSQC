@@ -27,11 +27,11 @@ class FastqToFasta(pyngsqc.Base):
              compression=pyngsqc.GUESS_COMPRESSION
             ):
         super(FastqToFasta, self).__init__(
-            in_file_name,
-            out_file_name,
-            compression=compression,
-            deduplicate_header=deduplicate_header
-            )
+                in_file_name,
+                out_file_name,
+                compression=compression,
+                deduplicate_header=deduplicate_header
+                )
         self.writer = pyngsqc.FastaWriter(
                 self.out_file_name,
                 compression
@@ -65,11 +65,11 @@ class ConvertPhredOffset(pyngsqc.Base):
              compression=pyngsqc.GUESS_COMPRESSION
             ):
         super(ConvertPhredOffset, self).__init__(
-            in_file_name,
-            out_file_name,
-            compression=compression,
-            deduplicate_header=deduplicate_header
-            )
+                in_file_name,
+                out_file_name,
+                compression=compression,
+                deduplicate_header=deduplicate_header
+                )
         self.in_qual_offset = in_qual_offset
         self.out_qual_offset = out_qual_offset
 
@@ -77,9 +77,9 @@ class ConvertPhredOffset(pyngsqc.Base):
         for read in self.reader:
             in_phred_str = read[3]
             read[3] = pyngsqc.convert_phred_offset(
-                in_phred_str,
-                self.in_qual_offset,
-                self.out_qual_offset
-                )
+                    in_phred_str,
+                    self.in_qual_offset,
+                    self.out_qual_offset
+                    )
 
         return True

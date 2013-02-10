@@ -39,13 +39,13 @@ class Collapser(pyngsqc.Base):
             ):
         # Initialise base class
         super(Collapser, self).__init__(
-            in_file_name,
-            out_file_name,
-            compression=compression,
-            deduplicate_header=deduplicate_header,
-            verbose=verbose,
-            print_summary=print_summary
-            )
+                in_file_name,
+                out_file_name,
+                compression=compression,
+                deduplicate_header=deduplicate_header,
+                verbose=verbose,
+                print_summary=print_summary
+                )
         # Initialise local variables
         self.tmp_dir = tmp_dir
         self.key_length = key_length
@@ -66,11 +66,11 @@ class Collapser(pyngsqc.Base):
                 self.keys.append(key)
                 # If in keys, file handle should exist
                 fh = namedtmp(
-                    mode="wb",
-                    dir=self.tmp_dir,
-                    prefix=key + "_",
-                    delete=False
-                    )
+                        mode="wb",
+                        dir=self.tmp_dir,
+                        prefix=key + "_",
+                        delete=False
+                        )
                 file_name = fh.name
                 self.tmp_file_names[key] = file_name
             read_str = "\n".join(read)
