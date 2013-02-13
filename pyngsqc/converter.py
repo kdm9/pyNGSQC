@@ -82,6 +82,7 @@ class ConvertQualOffset(pyngsqc.Base):
                     self.in_qual_offset,
                     self.out_qual_offset
                     )
+            self.writer.write(read)
 
         self.stats["reader"] = self.reader.stats
         self.stats["writer"] = self.writer.stats
