@@ -144,6 +144,17 @@ class Tester(unittest.TestCase):
         self.assertEqual(ftf.stats["reader"]["num_reads"], 1000)
         self.assertEqual(ftf.stats["writer"]["num_reads"], 1000)
 
+    def testConvertQualOffset(self):
+        cpo = conv.ConvertQualOffset(
+                in_file,
+                out_dir + "phred64.fastq",
+                in_qual_offset=33,
+                out_qual_offset=64,
+                )
+        cpo.run()
+        self.assertEqual(cpo.stats["reader"]["num_reads"], 1000)
+        self.assertEqual(cpo.stats["writer"]["num_reads"], 1000)
+
 
 def suite():
     suite = unittest.TestSuite()
