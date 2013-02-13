@@ -50,7 +50,7 @@ class QualStats(pyngsqc.QualBase):
                 )
         # Initialise local variables
         self.output = output
-        self.positions = []
+        self.stats["positions"] = []
 
         # Set default dicts for the position_bases and position_qualities lists
         bases = list("AGCTN")
@@ -87,13 +87,13 @@ class QualStats(pyngsqc.QualBase):
         print
         print "cycle\t", "\t".join(self.columns)
         cycle = 0
-        for position in self.positions:
+        for position in self.stats["positions"]:
             cycle += 1
             values = [str(position["summary"][col]) for col in self.columns]
             print "%i\t" % cycle, "\t".join(values)
 
     def _summarize_data(self):
-        for position in self.positions:
+        for position in self.stats["positions"]:
             # First, calculate summary stats on scores
             position["summary"]["min"] = float(min(position["scores"]))
             position["summary"]["max"] = float(max(position["scores"]))
@@ -135,17 +135,17 @@ class QualStats(pyngsqc.QualBase):
             position["summary"]["GC"] = float(g_plus_c) / float(total_count)
 
     def _process_read(self, read):
-        while len(self.positions) < len(read[1]):
-            self.positions.append(deepcopy(self.initial_dict))
+        while len(self.stats["positions"]) < len(read[1]):
+            self.stats["positions"].append(deepcopy(self.initial_dict))
 
         for pos in xrange(len(read[1])):
             base = read[1][pos]
             score = pyngsqc.get_qual_from_phred(read[3][pos], self.qual_offset)
-            self.positions[pos]["scores"][score] += 1
+            self.stats["positions"][pos]["scores"][score] += 1
             try:
-                self.positions[pos]["bases"][base] += 1
+                self.stats["positions"][pos]["bases"][base] += 1
             except KeyError:
-                self.positions[pos]["bases"]["N"] += 1
+                self.stats["positions"][pos]["bases"]["N"] += 1
 
     def run(self):
         for read in self.reader:
@@ -153,7 +153,5 @@ class QualStats(pyngsqc.QualBase):
             self._process_read(read)
         self._summarize_data()
 
-        self.stats["positions"] = self.positions
         if self.print_summary:
             self._print_summary()
-        return True
