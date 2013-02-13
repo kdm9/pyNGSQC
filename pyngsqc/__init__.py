@@ -69,6 +69,7 @@ class Base(object):
     num_good_reads = 0L
     num_bad_reads = 0L
     num_reads = 0L
+    stats = {}
 
     def __init__(
             self,

@@ -42,7 +42,7 @@ class FastqToFasta(pyngsqc.Base):
         for read in self.reader:
             fasta_read = []
             if self.remove_header:
-                header = ">%i" % self.reader.stats["num_reads"]
+                header = ">%i" % self.stats["reader"]["num_reads"]
             else:
                 header = ">%s" % read[0][1:]  # Keep fastq header
 

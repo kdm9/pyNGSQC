@@ -68,11 +68,11 @@ class QualFilter(pyngsqc.QualBase):
         stderr.write("Processed %i reads\n" % self.num_reads)
         stderr.write(
                 "\t%i sequences passed QC, wrote them to %s\n" %
-                (self.reader.stats["num_reads"], self.out_file_name)
+                (self.stats["reader"]["num_reads"], self.out_file_name)
                 )
         stderr.write(
                 "\t%i sequences failed QC, and were ignored\n" %
-                self.writer.stats["num_reads"]
+                self.stats["writer"]["num_reads"]
                 )
 
     def filter_read(self, read):
@@ -102,12 +102,15 @@ class QualFilter(pyngsqc.QualBase):
         for read in self.reader:
             if self.filter_read(read):
                 self.writer.write(read)
+
+        self.stats["reader"] = self.reader.stats
+        self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
         self.reader.close()
         return (
-                self.reader.stats["num_reads"],
-                self.writer.stats["num_reads"]
+                self.stats["reader"]["num_reads"],
+                self.stats["writer"]["num_reads"]
                 )
 
 
@@ -124,12 +127,13 @@ class QualFilter(pyngsqc.QualBase):
                     )
                 )
         runner.run()
+
+        self.stats["runner"] = runner.stats
+        self.stats["reader"] = self.reader.stats
+        self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
-        return (
-                self.reader.stats["num_reads"],
-                runner.stats["num_reads"],
-                )
+        
 
 
 class QualFilterTask(QualFilter):

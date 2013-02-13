@@ -115,19 +115,19 @@ class Collapser(pyngsqc.Base):
 
     def _print_summary(self):
         sys.stderr.write("Collapser finished\n")
-        sys.stderr.write("\tAnalysed %i reads\n" % self.reader.stats["num_reads"])
-        sys.stderr.write("\tFound %i unique reads\n" % self.writer.stats["num_reads"])
+        sys.stderr.write("\tAnalysed %i reads\n" % self.stats["reader"]["num_reads"])
+        sys.stderr.write("\tFound %i unique reads\n" % self.stats["writer"]["num_reads"])
         sys.stderr.write(
                 "\tRemoved %i non-unique reads\n" %
-                self.reader.stats["num_reads"] - self.writer.stats["num_reads"]
+                self.stats["reader"]["num_reads"] - self.stats["writer"]["num_reads"]
                 )
 
     def run(self):
         self._split_files()
         self._colapse()
+
+        self.stats["reader"] = self.reader.stats
+        self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
-        return (
-                self.reader.stats["num_reads"],
-                self.writer.stats["num_reads"]
-                )
+        

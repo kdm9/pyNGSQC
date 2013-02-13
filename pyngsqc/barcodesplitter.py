@@ -102,14 +102,14 @@ class BarcodeSplitter(pyngsqc.Base):
         stderr.write("Barcode Splitter finished:\n")
         stderr.write(
                 "\t%i sequences analysed, containing %s\n" % (
-                    self.writer.stats["num_reads"],
-                    len(self.writer.stats["barcode_counts"])
+                    self.stats["writer"]["num_reads"],
+                    len(self.stats["writer"]["barcode_counts"])
                     )
                 )
 
         if self.verbose:
             stderr.write("\tThe following barcodes were parsed:\n")
-            for bcd, count in self.writer.stats["barcode_counts"].iteritems():
+            for bcd, count in self.stats["writer"]["barcode_counts"].iteritems():
                 stderr.write("\t%s:\t%i\n" % (bcd, count))
 
     def run(self):
@@ -120,13 +120,12 @@ class BarcodeSplitter(pyngsqc.Base):
                     )
         for read in self.reader:
             self._parse_read_barcode(read)
+
+        self.stats["reader"] = self.reader.stats
+        self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
-        return (
-                self.reader.stats["num_reads"],
-                self.writer.stats["num_reads"],
-                self.writer.stats["barcode_counts"]
-                )
+        
 
     def run_parallel(self):
         if len(self.barcodes) < 1:
@@ -145,13 +144,13 @@ class BarcodeSplitter(pyngsqc.Base):
                     )
                 )
         runner.run()
+
+        self.stats["runner"] = runner.stats
+        self.stats["reader"] = self.reader.stats
+        self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
-        return (
-                self.reader.stats["num_reads"],
-                runner.stats["num_reads"],
-                runner.stats["barcode_counts"]
-                )
+        
 
 
 class BarcodeSplitTask(object):
@@ -320,10 +319,9 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         for paired_reads in zip(self.pair_1_reader, self.pair_2_reader):
             self.num_reads += 1
             self._parse_paired_reads_barcode(paired_reads)
+
+        self.stats["reader"] = self.reader.stats
+        self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
-        return (
-                self.num_reads,
-                self.num_good_reads,
-                self.num_bad_reads
-                )
+        

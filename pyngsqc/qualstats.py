@@ -152,6 +152,7 @@ class QualStats(pyngsqc.QualBase):
             self.num_reads += 1
             self._process_read(read)
         self._summarize_data()
+
+        self.stats["positions"] = self.positions
         if self.print_summary:
             self._print_summary()
-        return True

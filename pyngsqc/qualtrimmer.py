@@ -70,11 +70,11 @@ class QualTrimmer(pyngsqc.QualBase):
         stderr.write("QualTrimmer finished:\n")
         stderr.write(
                 "\t%i sequences passed QC, wrote them to %s\n" %
-                (self.writer.stats["num_reads"], self.out_file_name)
+                (self.stats["writer"]["num_reads"], self.out_file_name)
                 )
         stderr.write(
                 "\t%i sequences failed QC, and were ignored\n" %
-                self.reader.stats["num_reads"] - self.writer.stats["num_reads"]
+                self.stats["reader"]["num_reads"] - self.stats["writer"]["num_reads"]
                 )
 
     def run(self):
@@ -82,12 +82,14 @@ class QualTrimmer(pyngsqc.QualBase):
             read = self.trim_read(read)
             if len(read) == 4:  # If it's a valid read
                 self.writer.write(read)
+        
+        self.stats["reader"] = self.reader.stats
+        self.stats["writer"] = self.reader.stats
+
+        self.stats["reader"] = self.reader.stats
+        self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
-        return (
-                self.reader.stats["num_reads"],
-                self.writer.stats["num_reads"],
-                )
 
     def run_parallel(self):
         runner = _parallel.ParallelRunner(
@@ -102,12 +104,13 @@ class QualTrimmer(pyngsqc.QualBase):
                     )
                 )
         runner.run()
+
+        self.stats["runner"] = runner.stats
+        self.stats["reader"] = self.reader.stats
+        self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
-        return (
-                self.reader.stats["num_reads"],
-                runner.stats["num_reads"]
-                )
+        
 
 
 class QualTrimmerTask(QualTrimmer):
