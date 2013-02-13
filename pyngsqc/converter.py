@@ -54,7 +54,7 @@ class FastqToFasta(pyngsqc.Base):
         self.stats["writer"] = self.writer.stats
 
 
-class ConvertPhredOffset(pyngsqc.Base):
+class ConvertQualOffset(pyngsqc.Base):
 
     def __init__(
              self,
@@ -65,7 +65,7 @@ class ConvertPhredOffset(pyngsqc.Base):
              deduplicate_header=True,
              compression=pyngsqc.GUESS_COMPRESSION
             ):
-        super(ConvertPhredOffset, self).__init__(
+        super(ConvertQualOffset, self).__init__(
                 in_file_name,
                 out_file_name,
                 compression=compression,
