@@ -428,7 +428,7 @@ def get_qual_from_phred(phred, offset):
 
 
 def get_phred_from_qual(qual, offset):
-    return chr(qual - offset)
+    return chr(qual + offset)
 
 
 def percentile_from_counts(count_list, percentile):
@@ -490,8 +490,8 @@ def tuples_to_dict(tuples):
 def convert_phred_offset(in_phred, in_qual_offset, out_qual_offset):
     out_phred = ""
     for char in in_phred:
-        out_phred += pyngsqc.get_phred_from_qual(
-                pyngsqc.get_qual_from_phred(char, in_qual_offset),
+        out_phred += get_phred_from_qual(
+                get_qual_from_phred(char, in_qual_offset),
                 out_qual_offset
                 )
     return out_phred
