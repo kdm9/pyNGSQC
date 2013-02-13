@@ -21,7 +21,10 @@ from pyngsqc import hardtrimmer as htrim
 from pyngsqc import barcodesplitter as bcs
 from pyngsqc import collapser as col
 from pyngsqc import converter as conv
-
+from test.data.expected import (
+        EXPECTED_BARCODE_COUNTS,
+        EXPECTED_QUALSTATS_POSITIONS,
+        )
 import time
 import csv
 import unittest
@@ -106,40 +109,16 @@ class Tester(unittest.TestCase):
     def testBarcodeSplitterParallel(self):
         bc = bcs.BarcodeSplitter(in_file, out_dir, prefix + "barcodes.csv")
         bc.run_parallel()
-        expected_barcode_counts = {
-                'CACACTTGAATC': 332,
-                'CACCGATGTATC': 6,
-                'CACATCACGATC': 7,
-                'CACCAGATCATC': 281,
-                'CACTTAGGCATC': 7,
-                'CACGATCAGATC': 270,
-                'CACGCCAATATC': 35,
-                'CACTGACCAATC': 35,
-                'CACACAGTGATC': 21
-                }
-        self.assertEqual(bc.stats["reader"]["num_reads"], 1000)
-        self.assertEqual(bc.stats["runner"]["num_reads"], 994)
         self.assertEqual(bc.stats["runner"]["barcode_counts"],
-                expected_barcode_counts)
+                EXPECTED_BARCODE_COUNTS)
 
     def testBarcodeSplitter(self):
         bc = bcs.BarcodeSplitter(in_file, out_dir, prefix + "barcodes.csv")
         bc.run()
-        expected_barcode_counts = {
-                'CACACTTGAATC': 332,
-                'CACCGATGTATC': 6,
-                'CACATCACGATC': 7,
-                'CACCAGATCATC': 281,
-                'CACTTAGGCATC': 7,
-                'CACGATCAGATC': 270,
-                'CACGCCAATATC': 35,
-                'CACTGACCAATC': 35,
-                'CACACAGTGATC': 21
-                }
         self.assertEqual(bc.stats["reader"]["num_reads"], 1000)
         self.assertEqual(bc.stats["writer"]["num_reads"], 994)
         self.assertEqual(bc.stats["writer"]["barcode_counts"],
-                expected_barcode_counts)
+                EXPECTED_BARCODE_COUNTS)
 
     def testHardTrimmer(self):
         ht = htrim.HardTrimmer(in_file, out_dir + "ht.fastq", length=30)
@@ -155,7 +134,9 @@ class Tester(unittest.TestCase):
 
     def testQualStats(self):
         qs = qstat.QualStats(in_file, qual_offset=33)
-        self.assertTrue(qs.run())
+        qs.run()
+        self.assertEqual(qs.stats["reader"]["num_reads"], 1000)
+        self.assertEqual(qs.stats["positions"], EXPECTED_QUALSTATS_POSITIONS)
 
     def testFastqToFasta(self):
         ftf = conv.FastqToFasta(in_file, out_dir + "fasta.fasta")
