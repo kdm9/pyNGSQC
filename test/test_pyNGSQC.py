@@ -140,10 +140,9 @@ class Tester(unittest.TestCase):
 
     def testFastqToFasta(self):
         ftf = conv.FastqToFasta(in_file, out_dir + "fasta.fasta")
-        self.assertTrue(ftf.run())
-#        num_read, num_written = ftf.run()
-#        self.assertEqual(num_read, 1000)
-#        self.assertEqual(num_written, 1000)
+        ftf.run()
+        self.assertEqual(ftf.stats["reader"]["num_reads"], 1000)
+        self.assertEqual(ftf.stats["writer"]["num_reads"], 1000)
 
 
 def suite():

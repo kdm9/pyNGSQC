@@ -50,7 +50,8 @@ class FastqToFasta(pyngsqc.Base):
             fasta_read.append(read[1])  # Seq
 
             self.writer.write(fasta_read)
-        return True
+        self.stats["reader"] = self.reader.stats
+        self.stats["writer"] = self.writer.stats
 
 
 class ConvertPhredOffset(pyngsqc.Base):
@@ -82,4 +83,5 @@ class ConvertPhredOffset(pyngsqc.Base):
                     self.out_qual_offset
                     )
 
-        return True
+        self.stats["reader"] = self.reader.stats
+        self.stats["writer"] = self.writer.stats
