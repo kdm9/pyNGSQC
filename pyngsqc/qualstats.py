@@ -156,3 +156,4 @@ class QualStats(pyngsqc.QualBase):
         self.stats["positions"] = self.positions
         if self.print_summary:
             self._print_summary()
+        return True

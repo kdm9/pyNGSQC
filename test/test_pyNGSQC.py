@@ -53,9 +53,9 @@ class Tester(unittest.TestCase):
             pass_rate=0.9,
             max_Ns=-1,
             )
-        num_read, num_written = qf.run_parallel()
-        self.assertEqual(num_read, 1000)
-        self.assertEqual(num_written, 996)
+        qf.run_parallel()
+        self.assertEqual(qf.stats["reader"]["num_reads"], 1000)
+        self.assertEqual(qf.stats["runner"]["num_reads"], 996)
 
     def testQualFilter(self):
         qf = qfil.QualFilter(
@@ -66,18 +66,18 @@ class Tester(unittest.TestCase):
             pass_rate=0.9,
             max_Ns=-1,
             )
-        num_read, num_written = qf.run()
-        self.assertEqual(num_read, 1000)
-        self.assertEqual(num_written, 996)
+        qf.run()
+        self.assertEqual(qf.stats["reader"]["num_reads"], 1000)
+        self.assertEqual(qf.stats["writer"]["num_reads"], 996)
 
     def testCollapser(self):
         co = col.Collapser(
             in_file,
             out_dir + "col.fastq",
             )
-        num_read, num_written = co.run()
-        self.assertEqual(num_read, 1000)
-        self.assertEqual(num_written, 992)
+        co.run()
+        self.assertEqual(co.stats["reader"]["num_reads"], 1000)
+        self.assertEqual(co.stats["writer"]["num_reads"], 992)
 
     def testQualTrimmerParallel(self):
         qt = qtrim.QualTrimmer(
@@ -87,9 +87,9 @@ class Tester(unittest.TestCase):
             min_length=10,
             qual_offset=33
             )
-        num_read, num_written = qt.run_parallel()
-        self.assertEqual(num_read, 1000)
-        self.assertEqual(num_written, 1000)
+        qt.run_parallel()
+        self.assertEqual(qt.stats["reader"]["num_reads"], 1000)
+        self.assertEqual(qt.stats["runner"]["num_reads"], 1000)
 
     def testQualTrimmer(self):
         qt = qtrim.QualTrimmer(
@@ -99,13 +99,13 @@ class Tester(unittest.TestCase):
             min_length=10,
             qual_offset=33
             )
-        num_read, num_written = qt.run()
-        self.assertEqual(num_read, 1000)
-        self.assertEqual(num_written, 1000)
+        qt.run()
+        self.assertEqual(qt.stats["reader"]["num_reads"], 1000)
+        self.assertEqual(qt.stats["writer"]["num_reads"], 1000)
 
     def testBarcodeSplitterParallel(self):
         bc = bcs.BarcodeSplitter(in_file, out_dir, prefix + "barcodes.csv")
-        num_read, num_written, barcode_counts = bc.run_parallel()
+        bc.run_parallel()
         expected_barcode_counts = {
                 'CACACTTGAATC': 332,
                 'CACCGATGTATC': 6,
@@ -117,13 +117,14 @@ class Tester(unittest.TestCase):
                 'CACTGACCAATC': 35,
                 'CACACAGTGATC': 21
                 }
-        self.assertEqual(num_read, 1000)
-        self.assertEqual(num_written, 994)
-        self.assertEqual(barcode_counts, expected_barcode_counts)
+        self.assertEqual(bc.stats["reader"]["num_reads"], 1000)
+        self.assertEqual(bc.stats["runner"]["num_reads"], 994)
+        self.assertEqual(bc.stats["runner"]["barcode_counts"],
+                expected_barcode_counts)
 
     def testBarcodeSplitter(self):
         bc = bcs.BarcodeSplitter(in_file, out_dir, prefix + "barcodes.csv")
-        num_read, num_written, barcode_counts = bc.run()
+        bc.run()
         expected_barcode_counts = {
                 'CACACTTGAATC': 332,
                 'CACCGATGTATC': 6,
@@ -135,28 +136,26 @@ class Tester(unittest.TestCase):
                 'CACTGACCAATC': 35,
                 'CACACAGTGATC': 21
                 }
-        self.assertEqual(num_read, 1000)
-        self.assertEqual(num_written, 994)
-        self.assertEqual(barcode_counts, expected_barcode_counts)
+        self.assertEqual(bc.stats["reader"]["num_reads"], 1000)
+        self.assertEqual(bc.stats["writer"]["num_reads"], 994)
+        self.assertEqual(bc.stats["writer"]["barcode_counts"],
+                expected_barcode_counts)
 
     def testHardTrimmer(self):
         ht = htrim.HardTrimmer(in_file, out_dir + "ht.fastq", length=30)
-        num_read, num_written = ht.run()
-        self.assertEqual(num_read, 1000)
-        self.assertEqual(num_written, 1000)
+        ht.run()
+        self.assertEqual(ht.stats["reader"]["num_reads"], 1000)
+        self.assertEqual(ht.stats["writer"]["num_reads"], 1000)
 
     def testHardTrimmerParallel(self):
         ht = htrim.HardTrimmer(in_file, out_dir + "ht.fastq", length=30)
-        num_read, num_written = ht.run_parallel()
-        self.assertEqual(num_read, 1000)
-        self.assertEqual(num_written, 1000)
+        ht.run_parallel()
+        self.assertEqual(ht.stats["reader"]["num_reads"], 1000)
+        self.assertEqual(ht.stats["runner"]["num_reads"], 1000)
 
     def testQualStats(self):
         qs = qstat.QualStats(in_file, qual_offset=33)
         self.assertTrue(qs.run())
-#        num_read, num_written = qs.run()
-#        self.assertEqual(num_read, 1000)
-#        self.assertEqual(num_written, 1000)
 
     def testFastqToFasta(self):
         ftf = conv.FastqToFasta(in_file, out_dir + "fasta.fasta")
