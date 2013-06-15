@@ -156,10 +156,6 @@ class Tester(unittest.TestCase):
         self.assertEqual(cpo.stats["writer"]["num_reads"], 1000)
 
 
-def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(Tester))
-    return suite
-
 if __name__ == "__main__":
-    unittest.TextTestRunner(verbosity=3).run(suite())
+    runner = unittest.TextTestRunner(verbosity=3)
+    unittest.main(testRunner=runner)
