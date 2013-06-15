@@ -12,4 +12,5 @@ before_install:
  - sudo ln -s /run/shm /dev/shm
 
 script:
- - "PYTHONPATH=./ python test/test_pyNGSQC.py"
+ - python setup.py install
+ - python setup.py test
