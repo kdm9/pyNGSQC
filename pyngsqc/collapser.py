@@ -13,7 +13,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyngsqc
-from . import _parallel
+from pyngsqc import _parallel
 import sys
 from tempfile import NamedTemporaryFile as namedtmp
 import os

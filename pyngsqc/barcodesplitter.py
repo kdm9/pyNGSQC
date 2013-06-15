@@ -16,8 +16,7 @@ from sys import stderr
 import pyngsqc
 import csv
 from os import path
-from pyngsqc import seq_match
-from . import _parallel
+from pyngsqc import seq_match, _parallel
 
 FORWARD_ONLY = 0
 REVERSE_ONLY = 1

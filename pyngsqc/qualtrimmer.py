@@ -14,7 +14,7 @@
 
 from sys import stderr
 import pyngsqc
-from . import _parallel
+from pyngsqc import _parallel
 
 
 class QualTrimmer(pyngsqc.QualBase):

@@ -14,7 +14,7 @@
 
 import pyngsqc
 from sys import stderr
-from . import _parallel
+from pyngsqc import _parallel
 
 
 class QualFilter(pyngsqc.QualBase):
