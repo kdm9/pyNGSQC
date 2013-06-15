@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-#Copyright 2012 Kevin Murray
-#This program is free software: you can redistribute it and/or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation, either version 3 of the License, or
+# Copyright 2012 Kevin Murray
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
 #(at your option) any later version.
 
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 
-#You should have received a copy of the GNU General Public License
-#along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyngsqc as ngs
 from pyngsqc import qualfilter as qfil
@@ -22,9 +22,9 @@ from pyngsqc import barcodesplitter as bcs
 from pyngsqc import collapser as col
 from pyngsqc import converter as conv
 from test.data.expected import (
-        EXPECTED_BARCODE_COUNTS,
-        EXPECTED_QUALSTATS_POSITIONS,
-        )
+    EXPECTED_BARCODE_COUNTS,
+    EXPECTED_QUALSTATS_POSITIONS,
+)
 import time
 import csv
 import unittest
@@ -55,7 +55,7 @@ class Tester(unittest.TestCase):
             qual_offset=33,
             pass_rate=0.9,
             max_Ns=-1,
-            )
+        )
         qf.run_parallel()
         self.assertEqual(qf.stats["reader"]["num_reads"], 1000)
         self.assertEqual(qf.stats["runner"]["num_reads"], 996)
@@ -68,7 +68,7 @@ class Tester(unittest.TestCase):
             qual_offset=33,
             pass_rate=0.9,
             max_Ns=-1,
-            )
+        )
         qf.run()
         self.assertEqual(qf.stats["reader"]["num_reads"], 1000)
         self.assertEqual(qf.stats["writer"]["num_reads"], 996)
@@ -77,7 +77,7 @@ class Tester(unittest.TestCase):
         co = col.Collapser(
             in_file,
             out_dir + "col.fastq",
-            )
+        )
         co.run()
         self.assertEqual(co.stats["reader"]["num_reads"], 1000)
         self.assertEqual(co.stats["writer"]["num_reads"], 992)
@@ -89,7 +89,7 @@ class Tester(unittest.TestCase):
             qual_threshold=20,
             min_length=10,
             qual_offset=33
-            )
+        )
         qt.run_parallel()
         self.assertEqual(qt.stats["reader"]["num_reads"], 1000)
         self.assertEqual(qt.stats["runner"]["num_reads"], 1000)
@@ -101,7 +101,7 @@ class Tester(unittest.TestCase):
             qual_threshold=20,
             min_length=10,
             qual_offset=33
-            )
+        )
         qt.run()
         self.assertEqual(qt.stats["reader"]["num_reads"], 1000)
         self.assertEqual(qt.stats["writer"]["num_reads"], 1000)
@@ -110,7 +110,7 @@ class Tester(unittest.TestCase):
         bc = bcs.BarcodeSplitter(in_file, out_dir, prefix + "barcodes.csv")
         bc.run_parallel()
         self.assertEqual(bc.stats["runner"]["barcode_counts"],
-                EXPECTED_BARCODE_COUNTS)
+                         EXPECTED_BARCODE_COUNTS)
 
     def testBarcodeSplitter(self):
         bc = bcs.BarcodeSplitter(in_file, out_dir, prefix + "barcodes.csv")
@@ -118,7 +118,7 @@ class Tester(unittest.TestCase):
         self.assertEqual(bc.stats["reader"]["num_reads"], 1000)
         self.assertEqual(bc.stats["writer"]["num_reads"], 994)
         self.assertEqual(bc.stats["writer"]["barcode_counts"],
-                EXPECTED_BARCODE_COUNTS)
+                         EXPECTED_BARCODE_COUNTS)
 
     def testHardTrimmer(self):
         ht = htrim.HardTrimmer(in_file, out_dir + "ht.fastq", length=30)
@@ -146,11 +146,11 @@ class Tester(unittest.TestCase):
 
     def testConvertQualOffset(self):
         cpo = conv.ConvertQualOffset(
-                in_file,
-                out_dir + "phred64.fastq",
-                in_qual_offset=33,
-                out_qual_offset=64,
-                )
+            in_file,
+            out_dir + "phred64.fastq",
+            in_qual_offset=33,
+            out_qual_offset=64,
+        )
         cpo.run()
         self.assertEqual(cpo.stats["reader"]["num_reads"], 1000)
         self.assertEqual(cpo.stats["writer"]["num_reads"], 1000)
