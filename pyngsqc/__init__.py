@@ -1,23 +1,23 @@
-#Copyright 2012 Kevin Murray
+# Copyright 2012 Kevin Murray
 # program is free software: you can redistribute it and/or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation, either version 3 of the License, or
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
 #(at your option) any later version.
 
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 
-#You should have received a copy of the GNU General Public License
-#along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import gzip
 import bz2
 import os.path
 from array import array
 
-#TODO
+# TODO
 ## Make proper docstrings
 
 
@@ -44,24 +44,24 @@ SNIFF_CSV_DIALECT = 0
 STDOUT = 0
 
 AMBIGUITY_DICT = {
-        "A": ["A", "W", "M", "R", "N", "D", "H", "V"],
-        "C": ["C", "S", "M", "Y", "N", "B", "H", "V"],
-        "G": ["G", "S", "K", "R", "N", "B", "D", "V"],
-        "T": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
-        "U": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
-        "N": ["A", "G", "C", "T", "U", "W", "K", "M", "R", "Y", "N", "B",
-            "D", "H", "V"],
-        "B": ["C", "G", "T", "U"],
-        "D": ["A", "G", "T", "U"],
-        "H": ["A", "C", "T", "U"],
-        "V": ["A", "C", "G"],
-        "K": ["G", "T", "U"],
-        "M": ["A", "C"],
-        "S": ["G", "C"],
-        "W": ["A", "T", "U"],
-        "Y": ["C", "T", "U"],
-        "R": ["A", "G"]
-        }
+    "A": ["A", "W", "M", "R", "N", "D", "H", "V"],
+    "C": ["C", "S", "M", "Y", "N", "B", "H", "V"],
+    "G": ["G", "S", "K", "R", "N", "B", "D", "V"],
+    "T": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
+    "U": ["T", "U", "W", "K", "Y", "N", "B", "D", "H"],
+    "N": ["A", "G", "C", "T", "U", "W", "K", "M", "R", "Y", "N", "B",
+          "D", "H", "V"],
+    "B": ["C", "G", "T", "U"],
+    "D": ["A", "G", "T", "U"],
+    "H": ["A", "C", "T", "U"],
+    "V": ["A", "C", "G"],
+    "K": ["G", "T", "U"],
+    "M": ["A", "C"],
+    "S": ["G", "C"],
+    "W": ["A", "T", "U"],
+    "Y": ["C", "T", "U"],
+    "R": ["A", "G"]
+}
 
 
 class Base(object):
@@ -79,22 +79,23 @@ class Base(object):
             compression=GUESS_COMPRESSION,
             deduplicate_header=True,
             print_summary=False
-            ):
+    ):
         self.in_file_name = in_file_name
         self.out_file_name = out_file_name
-        #self.compression = compression  # this is set in the reader and writer
+        # self.compression = compression  # this is set in the reader and
+        # writer
         self.verbose = verbose
         if self.in_file_name is not None:
             self.reader = FastqReader(
-                    self.in_file_name,
-                    compression=compression,
-                    deduplicate_header=deduplicate_header
-                    )
-        if self.out_file_name is not None: 
+                self.in_file_name,
+                compression=compression,
+                deduplicate_header=deduplicate_header
+            )
+        if self.out_file_name is not None:
             self.writer = FastqWriter(
                 self.out_file_name,
                 compression=compression
-                )
+            )
         self.print_summary = print_summary
 
 
@@ -114,15 +115,15 @@ class QualBase(Base):
             # Local kwargs
             qual_offset=DEFAULT_QUAL_OFFSET,
             qual_threshold=DEFAULT_QUAL_THRESHOLD
-            ):
+    ):
         super(QualBase, self).__init__(
-                in_file_name,
-                out_file_name,
-                verbose=verbose,
-                print_summary=print_summary,
-                compression=compression,
-                deduplicate_header=True
-                )
+            in_file_name,
+            out_file_name,
+            verbose=verbose,
+            print_summary=print_summary,
+            compression=compression,
+            deduplicate_header=True
+        )
         self.qual_offset = qual_offset
         self.qual_threshold = qual_threshold
 
@@ -140,13 +141,13 @@ class _GenericFileHandle(object):
         if compression == GUESS_COMPRESSION:
             self.compression = self._guess_compression(self.file_name)
         elif compression == NO_COMPRESSION or compression == GZIPPED or \
-         compression == BZIPP2ED:
+                compression == BZIPP2ED:
             self.compression = compression
         else:
             raise ValueError(
-                    "%i is not a valid compression mode" %
-                    compression
-                    )
+                "%i is not a valid compression mode" %
+                compression
+            )
 
     def _guess_compression(self, file_name):
         path, ext = os.path.splitext(file_name)
@@ -203,10 +204,10 @@ class _Writer(_IOObject):
     def __init__(self, file_name, compression=GUESS_COMPRESSION):
         super(_Writer, self).__init__()
         self.io = _GenericFileHandle(
-                file_name,
-                mode=_GenericFileHandle.WRITE,
-                compression=compression
-                ).get()
+            file_name,
+            mode=_GenericFileHandle.WRITE,
+            compression=compression
+        ).get()
 
 
 class FastqWriter(_Writer):
@@ -251,7 +252,7 @@ class _Reader(_IOObject):
             file_name,
             deduplicate_header=True,
             compression=GUESS_COMPRESSION
-            ):
+    ):
         super(_Reader, self).__init__()
         self.file_name = file_name
         self.deduplicate_header = deduplicate_header
@@ -259,7 +260,7 @@ class _Reader(_IOObject):
             self.file_name,
             mode=_GenericFileHandle.READ,
             compression=compression
-            ).get()
+        ).get()
         self.stats["num_reads"] = 0L
 
     def __iter__(self):
@@ -273,12 +274,12 @@ class FastqReader(_Reader):
             file_name,
             deduplicate_header=True,
             compression=GUESS_COMPRESSION
-            ):
+    ):
         super(FastqReader, self).__init__(
-                file_name,
-                deduplicate_header,
-                compression
-                )
+            file_name,
+            deduplicate_header,
+            compression
+        )
 
     def next(self):
         this_read = []
@@ -316,12 +317,12 @@ class FastqRandomAccess(_Reader):
             file_name,
             deduplicate_header=True,
             compression=GUESS_COMPRESSION
-            ):
+    ):
         super(FastqRandomAccess, self).__init__(
-                file_name,
-                deduplicate_header,
-                compression
-                )
+            file_name,
+            deduplicate_header,
+            compression
+        )
         self.record_positions = array("L")
         self._build_cache()
 
@@ -331,7 +332,7 @@ class FastqRandomAccess(_Reader):
         this_read = []
         for iii in xrange(4):
             this_read.append(self.io.readline())
-        #print index, this_read
+        # print index, this_read
         if not len(this_read[1]) == len(this_read[3]):
             err = "Read %s has seq and qual of different lengths"
             raise ValueError(err % repr(this_read))
@@ -377,10 +378,10 @@ def base_match(base_1, base_2, allow_ambiguity=True):
             result = base_2 in AMBIGUITY_DICT[base_1]
         except KeyError:
             raise ValueError("(%s, %s) is an invalid base pair" % (
-                    base_1,
-                    base_2
-                    )
-                )
+                base_1,
+                base_2
+            )
+            )
     else:
         result = base_2 == base_1
     return result
@@ -421,9 +422,9 @@ def get_qual_from_phred(phred, offset):
     qual = ord(phred) - offset
     if qual < 0:
         raise ValueError(
-                "Invalid quality score %i from phred %s (ord %i)" %
-                (qual, phred, ord(phred))
-                )
+            "Invalid quality score %i from phred %s (ord %i)" %
+            (qual, phred, ord(phred))
+        )
     return qual
 
 
@@ -435,14 +436,14 @@ def percentile_from_counts(count_list, percentile):
     """Returns the median value from a list whose values are counts of the
     index i
     """
-    #The index of the median, or of the lower of the two values if sum is even
+    # The index of the median, or of the lower of the two values if sum is even
     halfway_index = int(round(float(sum(count_list) * percentile))) - 1
     current_index = 0
     pos_within_value = 0  # Governs when we skip to the next median value
     median = 0
     while current_index <= halfway_index:
         # If we have not iterated through all counts of this value of median
-        if  pos_within_value < count_list[median]:
+        if pos_within_value < count_list[median]:
             pos_within_value += 1
             current_index += 1
         else:
@@ -491,7 +492,7 @@ def convert_phred_offset(in_phred, in_qual_offset, out_qual_offset):
     out_phred = ""
     for char in in_phred:
         out_phred += get_phred_from_qual(
-                get_qual_from_phred(char, in_qual_offset),
-                out_qual_offset
-                )
+            get_qual_from_phred(char, in_qual_offset),
+            out_qual_offset
+        )
     return out_phred

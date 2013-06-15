@@ -1,16 +1,16 @@
-#Copyright 2012 Kevin Murray
-#This program is free software: you can redistribute it and/or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation, either version 3 of the License, or
+# Copyright 2012 Kevin Murray
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
 #(at your option) any later version.
 
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 
-#You should have received a copy of the GNU General Public License
-#along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from sys import stderr
 import _parallel
@@ -28,14 +28,14 @@ class HardTrimmer(pyngsqc.Base):
             verbose=False,
             compression=pyngsqc.GUESS_COMPRESSION,
             print_summary=False
-            ):
+    ):
         super(HardTrimmer, self).__init__(
-                in_file_name,
-                out_file_name,
-                verbose=verbose,
-                compression=compression,
-                print_summary=print_summary
-                )
+            in_file_name,
+            out_file_name,
+            verbose=verbose,
+            compression=compression,
+            print_summary=print_summary
+        )
         self.length = length
 
     def trim_read(self, read):
@@ -46,12 +46,12 @@ class HardTrimmer(pyngsqc.Base):
     def _print_summary(self):
         stderr.write("HardTrimmer finished:\n")
         stderr.write(
-                "\t%i sequences were trimmed to %i wrote them to %s\n" % (
-                    self.stats["writer"]["num_reads"],
-                    self.length,
-                    self.out_file_name
-                    )
-                )
+            "\t%i sequences were trimmed to %i wrote them to %s\n" % (
+            self.stats["writer"]["num_reads"],
+            self.length,
+            self.out_file_name
+            )
+        )
 
     def run(self):
         for read in self.reader:
@@ -63,15 +63,14 @@ class HardTrimmer(pyngsqc.Base):
         self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
-        
 
     def run_parallel(self):
         runner = _parallel.ParallelRunner(
-                HardTrimmerTask,
-                self.reader,
-                self.writer,
-                (self.length,)
-                )
+            HardTrimmerTask,
+            self.reader,
+            self.writer,
+            (self.length,)
+        )
         runner.run()
 
         self.stats["runner"] = runner.stats
@@ -79,7 +78,6 @@ class HardTrimmer(pyngsqc.Base):
         self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
-        
 
 
 class HardTrimmerTask(HardTrimmer):

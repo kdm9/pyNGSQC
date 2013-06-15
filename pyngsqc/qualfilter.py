@@ -1,16 +1,16 @@
-#Copyright 2012 Kevin Murray
-#This program is free software: you can redistribute it and/or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation, either version 3 of the License, or
+# Copyright 2012 Kevin Murray
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
 #(at your option) any later version.
 
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 
-#You should have received a copy of the GNU General Public License
-#along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyngsqc
 from sys import stderr
@@ -47,17 +47,17 @@ class QualFilter(pyngsqc.QualBase):
             qual_threshold=15,
             pass_rate=0.9,
             max_Ns=-1
-            ):
+    ):
         # Initialise base class
         super(QualFilter, self).__init__(
-                in_file_name,
-                out_file_name,
-                qual_offset=qual_offset,
-                compression=compression,
-                deduplicate_header=deduplicate_header,
-                verbose=verbose,
-                print_summary=print_summary
-                )
+            in_file_name,
+            out_file_name,
+            qual_offset=qual_offset,
+            compression=compression,
+            deduplicate_header=deduplicate_header,
+            verbose=verbose,
+            print_summary=print_summary
+        )
         # Initialise local variables
         self.pass_rate = float(pass_rate)
         self.qual_threshold = qual_threshold
@@ -67,13 +67,13 @@ class QualFilter(pyngsqc.QualBase):
         stderr.write("QC check finished:\n")
         stderr.write("Processed %i reads\n" % self.num_reads)
         stderr.write(
-                "\t%i sequences passed QC, wrote them to %s\n" %
-                (self.stats["reader"]["num_reads"], self.out_file_name)
-                )
+            "\t%i sequences passed QC, wrote them to %s\n" %
+            (self.stats["reader"]["num_reads"], self.out_file_name)
+        )
         stderr.write(
-                "\t%i sequences failed QC, and were ignored\n" %
-                self.stats["writer"]["num_reads"]
-                )
+            "\t%i sequences failed QC, and were ignored\n" %
+            self.stats["writer"]["num_reads"]
+        )
 
     def filter_read(self, read):
         def _passes_qc(read):
@@ -88,7 +88,7 @@ class QualFilter(pyngsqc.QualBase):
             if this_pass_rate <= self.pass_rate:
                 return False
             elif self.max_Ns != -1 and \
-             int(pyngsqc.num_Ns_in_read(read)) > self.max_Ns:
+                    int(pyngsqc.num_Ns_in_read(read)) > self.max_Ns:
                 return False
             else:
                 return True
@@ -109,23 +109,22 @@ class QualFilter(pyngsqc.QualBase):
             self._print_summary()
         self.reader.close()
         return (
-                self.stats["reader"]["num_reads"],
-                self.stats["writer"]["num_reads"]
-                )
-
+            self.stats["reader"]["num_reads"],
+            self.stats["writer"]["num_reads"]
+        )
 
     def run_parallel(self):
         runner = _parallel.ParallelRunner(
-                QualFilterTask,
-                self.reader,
-                self.writer,
-                (  # Task Options
-                    self.pass_rate,
-                    self.qual_threshold,
-                    self.qual_offset,
-                    self.max_Ns
-                    )
-                )
+            QualFilterTask,
+            self.reader,
+            self.writer,
+            (  # Task Options
+                self.pass_rate,
+                self.qual_threshold,
+                self.qual_offset,
+                self.max_Ns
+            )
+        )
         runner.run()
 
         self.stats["runner"] = runner.stats
@@ -133,7 +132,6 @@ class QualFilter(pyngsqc.QualBase):
         self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
-        
 
 
 class QualFilterTask(QualFilter):
@@ -145,7 +143,7 @@ class QualFilterTask(QualFilter):
             qual_threshold,
             qual_offset,
             max_Ns,
-            ):
+    ):
         self.read = read
         self.pass_rate = float(pass_rate)
         self.qual_threshold = qual_threshold

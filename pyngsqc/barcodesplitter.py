@@ -1,16 +1,16 @@
-#Copyright 2012 Kevin Murray
-#This program is free software: you can redistribute it and/or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation, either version 3 of the License, or
+# Copyright 2012 Kevin Murray
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
 #(at your option) any later version.
 
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 
-#You should have received a copy of the GNU General Public License
-#along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from sys import stderr
 import pyngsqc
@@ -41,7 +41,7 @@ class BarcodeSplitter(pyngsqc.Base):
             barcode_end=FORWARD_ONLY,
             mismatches=0,
             write_to_header=False
-            ):
+    ):
         # Initialise base class
         super(BarcodeSplitter, self).__init__(
             in_file_name,
@@ -50,19 +50,19 @@ class BarcodeSplitter(pyngsqc.Base):
             deduplicate_header=deduplicate_header,
             verbose=verbose,
             print_summary=print_summary
-            )
+        )
         self.output_dir = output_dir
         self.mismatches = mismatches
         self.barcodes = self._set_barcodes_from_file(
-                barcode_file,
-                pyngsqc.SNIFF_CSV_DIALECT
-                )
+            barcode_file,
+            pyngsqc.SNIFF_CSV_DIALECT
+        )
         self.write_to_header = write_to_header
         self.writer = _BarcodeWriter(
-                self.barcodes,
-                self.in_file_name,
-                self.output_dir
-                )
+            self.barcodes,
+            self.in_file_name,
+            self.output_dir
+        )
 
     def _sniff_csv_dialect(self, file_name):
         csv_fh = open(file_name, "rb")
@@ -91,9 +91,9 @@ class BarcodeSplitter(pyngsqc.Base):
             if seq_match(barcode, read_barcode, mismatches=self.mismatches):
                 if self.write_to_header:
                     read[0] += " bcd:%s desc:%s" % (
-                            barcode,
-                            self.barcodes[barcode]
-                            )
+                        barcode,
+                        self.barcodes[barcode]
+                    )
                 read[1] = read[1][barcode_len:]
                 read[3] = read[3][barcode_len:]
                 self.writer.write((barcode, read))
@@ -101,11 +101,11 @@ class BarcodeSplitter(pyngsqc.Base):
     def _print_summary(self):
         stderr.write("Barcode Splitter finished:\n")
         stderr.write(
-                "\t%i sequences analysed, containing %s\n" % (
-                    self.stats["writer"]["num_reads"],
-                    len(self.stats["writer"]["barcode_counts"])
-                    )
-                )
+            "\t%i sequences analysed, containing %s\n" % (
+            self.stats["writer"]["num_reads"],
+            len(self.stats["writer"]["barcode_counts"])
+            )
+        )
 
         if self.verbose:
             stderr.write("\tThe following barcodes were parsed:\n")
@@ -115,9 +115,9 @@ class BarcodeSplitter(pyngsqc.Base):
     def run(self):
         if len(self.barcodes) < 1:
             raise ValueError(
-                    "You must supply a barcode dict or file before"
-                    " run()-ing BarcodeSplitter"
-                    )
+                "You must supply a barcode dict or file before"
+                " run()-ing BarcodeSplitter"
+            )
         for read in self.reader:
             self._parse_read_barcode(read)
 
@@ -125,24 +125,23 @@ class BarcodeSplitter(pyngsqc.Base):
         self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
-        
 
     def run_parallel(self):
         if len(self.barcodes) < 1:
             raise ValueError(
-                    "You must supply a barcode dict or file before"
-                    " run()-ing BarcodeSplitter"
-                    )
+                "You must supply a barcode dict or file before"
+                " run()-ing BarcodeSplitter"
+            )
         runner = _parallel.ParallelRunner(
-                BarcodeSplitTask,
-                self.reader,
-                self.writer,
-                (  # Task options
-                    self.barcodes,
-                    self.mismatches,
-                    self.write_to_header,
-                    )
-                )
+            BarcodeSplitTask,
+            self.reader,
+            self.writer,
+            (  # Task options
+                self.barcodes,
+                self.mismatches,
+                self.write_to_header,
+            )
+        )
         runner.run()
 
         self.stats["runner"] = runner.stats
@@ -150,7 +149,6 @@ class BarcodeSplitter(pyngsqc.Base):
         self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
-        
 
 
 class BarcodeSplitTask(object):
@@ -168,9 +166,9 @@ class BarcodeSplitTask(object):
             if seq_match(barcode, read_barcode, mismatches=self.mismatches):
                 if self.write_to_header:
                     self.read[0] += " bcd:%s desc:%s" % (
-                            barcode,
-                            str(self.barcodes[barcode])
-                            )
+                        barcode,
+                        str(self.barcodes[barcode])
+                    )
                 self.read[1] = self.read[1][barcode_len:]
                 self.read[3] = self.read[3][barcode_len:]
                 return (barcode, self.read)
@@ -214,7 +212,7 @@ class _BarcodeWriter(pyngsqc.Base):
         if barcode is not None:
             if barcode not in self.barcode_files:
                 self.barcode_files[barcode] = \
-                 self._get_barcode_writer(barcode)
+                    self._get_barcode_writer(barcode)
             self.stats["num_reads"] += 1
             self.barcode_files[barcode].write(read)
             try:
@@ -235,22 +233,22 @@ class PairedBarcodeSplitter(BarcodeSplitter):
             output_dir=None,
             compression=pyngsqc.GUESS_COMPRESSION,
             verbose=False
-            ):
+    ):
         self.pair_1_file_name = pair_1_file_name
         self.pair_2_file_name = pair_2_file_name
         self.output_dir = output_dir
         self.pair_1_reader = pyngsqc.FastqReader(
-                self.pair_1_file_name,
-                compression=compression
-                )
+            self.pair_1_file_name,
+            compression=compression
+        )
         self.pair_2_reader = pyngsqc.FastqReader(
-                self.pair_2_file_name,
-                compression=compression
-                )
+            self.pair_2_file_name,
+            compression=compression
+        )
         self.verbose = verbose
         self.barcodes = {}
         self.barcode_counts = {}
-        #Note that files will be stored as a tuple of writers (pair_1, pair_2)
+        # Note that files will be stored as a tuple of writers (pair_1, pair_2)
         self.barcode_files = {}
         self.num_reads = 0
 
@@ -269,9 +267,9 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         # Read 1
         read_1_split_path = path.basename(self.pair_1_file_name).split(".")
         out_path = path.join(
-                dir_path,
-                read_1_split_path[0] + "_%s" % identifier
-                )
+            dir_path,
+            read_1_split_path[0] + "_%s" % identifier
+        )
         if len(read_1_split_path) > 1:
             # If the path had extensions, add them
             out_path += "." + ".".join(read_1_split_path[1:])
@@ -280,9 +278,9 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         # Read 2
         read_2_split_path = path.basename(self.pair_1_file_name).split(".")
         out_path = path.join(
-                dir_path,
-                read_2_split_path[0] + "_%s" % identifier
-                )
+            dir_path,
+            read_2_split_path[0] + "_%s" % identifier
+        )
 
         # If the path had extensions, add them
         if len(read_2_split_path) > 1:
@@ -302,7 +300,7 @@ class PairedBarcodeSplitter(BarcodeSplitter):
                 if barcode not in self.barcode_counts:
                     self.barcode_counts[barcode] = 0
                 read_1[0] += " bcd:%s desc:%s" % \
-                 (barcode, self.barcodes[barcode])
+                    (barcode, self.barcodes[barcode])
                 read_1[1] = read_1[1][barcode_len:]
                 read_1[3] = read_1[3][barcode_len:]
                 (read_1_writer, read_2_writer) = self.barcode_files[barcode]
@@ -313,9 +311,9 @@ class PairedBarcodeSplitter(BarcodeSplitter):
     def run(self):
         if len(self.barcodes) < 1:
             raise ValueError(
-                    "You must supply a barcode dict or file before"
-                    " run()-ing BarcodeSplitter"
-                    )
+                "You must supply a barcode dict or file before"
+                " run()-ing BarcodeSplitter"
+            )
         for paired_reads in zip(self.pair_1_reader, self.pair_2_reader):
             self.num_reads += 1
             self._parse_paired_reads_barcode(paired_reads)
@@ -324,4 +322,3 @@ class PairedBarcodeSplitter(BarcodeSplitter):
         self.stats["writer"] = self.writer.stats
         if self.print_summary:
             self._print_summary()
-        
