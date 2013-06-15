@@ -13,7 +13,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from sys import stderr
-import _parallel
+from . import _parallel
 import pyngsqc
 
 

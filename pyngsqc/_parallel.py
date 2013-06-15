@@ -73,7 +73,7 @@ class ParallelRunner(object):
         writer_result = mp.Queue()
         num_procs = mp.cpu_count()
 
-        procs = [Process(tasks, results) for i in xrange(num_procs)]
+        procs = [Process(tasks, results) for i in range(num_procs)]
         for proc in procs:
             proc.start()
 
@@ -84,7 +84,7 @@ class ParallelRunner(object):
             tasks.put(self.task(read, *self.task_args))
 
         # Add a poison pill for each process
-        for i in xrange(num_procs):
+        for i in range(num_procs):
             tasks.put(None)  # None ends the process
 
         # Wait for all tasks to run

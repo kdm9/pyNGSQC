@@ -66,9 +66,9 @@ AMBIGUITY_DICT = {
 
 class Base(object):
 
-    num_good_reads = 0L
-    num_bad_reads = 0L
-    num_reads = 0L
+    num_good_reads = 0
+    num_bad_reads = 0
+    num_reads = 0
     stats = {}
 
     def __init__(
@@ -261,7 +261,7 @@ class _Reader(_IOObject):
             mode=_GenericFileHandle.READ,
             compression=compression
         ).get()
-        self.stats["num_reads"] = 0L
+        self.stats["num_reads"] = 0
 
     def __iter__(self):
         return self
@@ -281,7 +281,7 @@ class FastqReader(_Reader):
             compression
         )
 
-    def next(self):
+    def __next__(self):
         this_read = []
         at_start = True
         num_lines = 0
@@ -309,6 +309,9 @@ class FastqReader(_Reader):
                 return this_read
         raise StopIteration
 
+    def next(self):
+        return self.__next__()
+
 
 class FastqRandomAccess(_Reader):
 
@@ -330,7 +333,7 @@ class FastqRandomAccess(_Reader):
         start_pos = self.record_positions[index]
         self.io.seek(start_pos)
         this_read = []
-        for iii in xrange(4):
+        for iii in range(4):
             this_read.append(self.io.readline())
         # print index, this_read
         if not len(this_read[1]) == len(this_read[3]):
@@ -394,14 +397,14 @@ def seq_match(seq_1, seq_2, mismatches=0, allow_ambiguity=False):
         return False
     if allow_ambiguity:
         this_mismatches = 0
-        for iii in xrange(len(seq_1)):
+        for iii in range(len(seq_1)):
             if not base_match(seq_1[iii], seq_2[iii], allow_ambiguity=True):
                 this_mismatches += 1
             if this_mismatches > mismatches:
                 return False
         return this_mismatches <= mismatches
     else:
-        for iii in xrange(len(seq_1)):
+        for iii in range(len(seq_1)):
             if seq_1[iii] != seq_2[iii]:
                 mismatches -= 1
                 if mismatches < 0:

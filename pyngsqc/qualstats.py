@@ -78,19 +78,19 @@ class QualStats(pyngsqc.QualBase):
             "bases": dict.fromkeys(bases, 0),
             # 126 is the last printable character in ASCII, store as list
             # as keys are integers, saves mem
-            "scores": [0 for iii in xrange(self.qual_offset, 126)],
+            "scores": [0 for iii in range(self.qual_offset, 126)],
             # Dict of summary data to be printed
             "summary": dict.fromkeys(self.columns, 0.0)
         }
 
     def _print_summary(self):
-        print
-        print "cycle\t", "\t".join(self.columns)
+        print()
+        print("cycle\t", "\t".join(self.columns))
         cycle = 0
         for position in self.stats["positions"]:
             cycle += 1
             values = [str(position["summary"][col]) for col in self.columns]
-            print "%i\t" % cycle, "\t".join(values)
+            print("%i\t" % cycle, "\t".join(values))
 
     def _summarize_data(self):
         for position in self.stats["positions"]:
@@ -100,7 +100,7 @@ class QualStats(pyngsqc.QualBase):
             # Sum of the list is the total number of scores
             position["summary"]["count"] = float(sum(position["scores"]))
             # The actual sum is the sum of (index * count)
-            for sss in xrange(len(position["scores"])):
+            for sss in range(len(position["scores"])):
                 position["summary"]["sum"] += \
                     float(sss * position["scores"][sss])
             # Mean
@@ -127,7 +127,7 @@ class QualStats(pyngsqc.QualBase):
 
             # Calculate Base Counts
             total_count = 0
-            for base, count in position["bases"].items():
+            for base, count in list(position["bases"].items()):
                 total_count += count
                 position["summary"][base] = count
             g_plus_c = position["summary"]["G"] + position["summary"]["C"]
@@ -138,7 +138,7 @@ class QualStats(pyngsqc.QualBase):
         while len(self.stats["positions"]) < len(read[1]):
             self.stats["positions"].append(deepcopy(self.initial_dict))
 
-        for pos in xrange(len(read[1])):
+        for pos in range(len(read[1])):
             base = read[1][pos]
             score = pyngsqc.get_qual_from_phred(read[3][pos], self.qual_offset)
             self.stats["positions"][pos]["scores"][score] += 1

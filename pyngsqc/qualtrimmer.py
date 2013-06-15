@@ -14,7 +14,7 @@
 
 from sys import stderr
 import pyngsqc
-import _parallel
+from . import _parallel
 
 
 class QualTrimmer(pyngsqc.QualBase):
@@ -51,7 +51,7 @@ class QualTrimmer(pyngsqc.QualBase):
         self.min_length = min_length
 
     def trim_read(self, read):
-        for iii in reversed(xrange(len(read[1]))):
+        for iii in reversed(range(len(read[1]))):
             if self.remove_trailing_Ns and read[1][iii].upper() == "N":
                 # Remove last base and score
                 read[1] = read[1][:-1]  # Base

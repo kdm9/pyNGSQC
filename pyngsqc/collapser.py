@@ -13,7 +13,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyngsqc
-import _parallel
+from . import _parallel
 import sys
 from tempfile import NamedTemporaryFile as namedtmp
 import os
@@ -110,7 +110,7 @@ class Collapser(pyngsqc.Base):
                 if read_tuple[0] != last_read_seq:
                     last_read_seq = read_tuple[0]
                     self.writer.write(self._tuple_to_read(read_tuple))
-        for file_name in self.tmp_file_names.values():
+        for file_name in list(self.tmp_file_names.values()):
             os.remove(file_name)
 
     def _print_summary(self):

@@ -17,7 +17,7 @@ import pyngsqc
 import csv
 from os import path
 from pyngsqc import seq_match
-import _parallel
+from . import _parallel
 
 FORWARD_ONLY = 0
 REVERSE_ONLY = 1
@@ -67,7 +67,7 @@ class BarcodeSplitter(pyngsqc.Base):
     def _sniff_csv_dialect(self, file_name):
         csv_fh = open(file_name, "rb")
         sample = ""
-        for i in xrange(10):
+        for i in range(10):
             sample += csv_fh.readline()
         csv_dialect = csv.Sniffer().sniff(sample)
         csv_fh.close()
@@ -109,7 +109,7 @@ class BarcodeSplitter(pyngsqc.Base):
 
         if self.verbose:
             stderr.write("\tThe following barcodes were parsed:\n")
-            for bcd, count in self.stats["writer"]["barcode_counts"].iteritems():
+            for bcd, count in self.stats["writer"]["barcode_counts"].items():
                 stderr.write("\t%s:\t%i\n" % (bcd, count))
 
     def run(self):
