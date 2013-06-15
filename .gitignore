@@ -2,5 +2,6 @@
 *.swp
 *~
 build
+dist
 *egg-info
 test/data/out/
