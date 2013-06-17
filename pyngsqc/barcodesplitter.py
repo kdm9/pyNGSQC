@@ -67,7 +67,7 @@ class BarcodeSplitter(pyngsqc.Base):
         csv_fh = open(file_name, "rb")
         sample = ""
         for i in range(10):
-            sample += csv_fh.readline()
+            sample += bytes(csv_fh.readline()).decode("UTF-8")
         csv_dialect = csv.Sniffer().sniff(sample)
         csv_fh.close()
         return csv_dialect
