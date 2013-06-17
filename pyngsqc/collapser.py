@@ -73,8 +73,8 @@ class Collapser(pyngsqc.Base):
                 )
                 file_name = fh.name
                 self.tmp_file_names[key] = file_name
-            read_str = "\n".join(read)
-            fh.write(read_str + "\n")
+            read_str = bytes("\n".join(read) + "\n", encoding="UTF-8")
+            fh.write(read_str)
             fh.close()
 
         # get file size

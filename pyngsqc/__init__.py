@@ -172,15 +172,15 @@ class _GenericFileHandle(object):
 
     def _get_plaintext(self):
         if self.mode == self.READ:
-            return open(self.file_name, "rb")
+            return open(self.file_name, "r")
         elif self.mode == self.WRITE:
-            return open(self.file_name, "wb")
+            return open(self.file_name, "w")
 
     def _get_gzip(self):
         if self.mode == self.READ:
-            return gzip.open(self.file_name, "rb")
+            return gzip.open(self.file_name, "r")
         elif self.mode == self.WRITE:
-            return gzip.open(self.file_name, "wb")
+            return gzip.open(self.file_name, "w")
 
     def _get_bzip2(self):
         if self.mode == self.READ:
