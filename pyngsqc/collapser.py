@@ -61,19 +61,19 @@ class Collapser(pyngsqc.Base):
         for read in self.reader:
             key = read[1][:self.key_length]
             if key in self.tmp_file_names:
-                fh = open(self.tmp_file_names[key], "ab")
+                fh = open(self.tmp_file_names[key], "a")
             else:
                 self.keys.append(key)
                 # If in keys, file handle should exist
                 fh = namedtmp(
-                    mode="wb",
+                    mode="w",
                     dir=self.tmp_dir,
                     prefix=key + "_",
                     delete=False
                 )
                 file_name = fh.name
                 self.tmp_file_names[key] = file_name
-            read_str = bytes("\n".join(read) + "\n", encoding="UTF-8")
+            read_str = "\n".join(read) + "\n"
             fh.write(read_str)
             fh.close()
 
