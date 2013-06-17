@@ -12,7 +12,9 @@ before_install:
 # https://github.com/travis-ci/travis-cookbooks/issues/155
  - sudo rm -rf /dev/shm
  - sudo ln -s /run/shm /dev/shm
+ - pip install nosetests
+ - pip install coverage
 
 script:
  - python setup.py install
- - python setup.py test
+ - nosetests -v --with-coverage --cover-package=pyngsqc
