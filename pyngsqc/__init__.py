@@ -123,12 +123,10 @@ class QualBase(Base):
 
 
 class _GenericFileHandle(object):
-    READ = 0
-    WRITE = 1
 
-    def __init__(self, file_name, mode=READ, compression="guess"):
+    def __init__(self, file_name, mode="read", compression="guess"):
         self.file_name = file_name
-        if mode == self.READ or mode == self.WRITE:
+        if mode == "read" or mode == "write":
             self.mode = mode
         else:
             raise ValueError("%r is not a valid IO mode" % mode)
@@ -165,21 +163,21 @@ class _GenericFileHandle(object):
             raise ValueError(self.compression)
 
     def _get_plaintext(self):
-        if self.mode == self.READ:
+        if self.mode == "read":
             return open(self.file_name, "r")
-        elif self.mode == self.WRITE:
+        elif self.mode == "write":
             return open(self.file_name, "w")
 
     def _get_gzip(self):
-        if self.mode == self.READ:
+        if self.mode == "read":
             return gzip.open(self.file_name, "r")
-        elif self.mode == self.WRITE:
+        elif self.mode == "write":
             return gzip.open(self.file_name, "w")
 
     def _get_bzip2(self):
-        if self.mode == self.READ:
+        if self.mode == "read":
             return bz2.BZ2File(self.file_name, "r")
-        elif self.mode == self.WRITE:
+        elif self.mode == "write":
             return bz2.BZ2File(self.file_name, "w")
 
 
@@ -252,7 +250,7 @@ class _Reader(_IOObject):
         self.deduplicate_header = deduplicate_header
         self.io = _GenericFileHandle(
             self.file_name,
-            mode=_GenericFileHandle.READ,
+            mode="read",
             compression=compression
         ).get()
         self.stats["num_reads"] = 0
