@@ -31,7 +31,7 @@ class QualStats(pyngsqc.QualBase):
             # Local args
             # Inherited kwargs
             qual_offset=pyngsqc.DEFAULT_QUAL_OFFSET,
-            compression=pyngsqc.GUESS_COMPRESSION,
+            compression="guess",
             deduplicate_header=True,
             verbose=False,
             print_summary=False,

@@ -32,7 +32,7 @@ class BarcodeSplitter(pyngsqc.Base):
             # Local args
             barcode_file,
             # Inherited kwargs
-            compression=pyngsqc.GUESS_COMPRESSION,
+            compression="guess",
             deduplicate_header=True,
             verbose=False,
             print_summary=False,
@@ -230,7 +230,7 @@ class PairedBarcodeSplitter(BarcodeSplitter):
             pair_1_file_name,
             pair_2_file_name,
             output_dir=None,
-            compression=pyngsqc.GUESS_COMPRESSION,
+            compression="guess",
             verbose=False
     ):
         self.pair_1_file_name = pair_1_file_name

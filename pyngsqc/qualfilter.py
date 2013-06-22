@@ -22,7 +22,7 @@ class QualFilter(pyngsqc.QualBase):
     Usage:
         QualityFilter(in_file_name, out_file_name, qual_threshold=15,
                   pass_rate=0.9, max_Ns=-1, qual_offset=64, append=False,
-                  compression=pyngsqc.GUESS_COMPRESSION):
+                  compression="guess"):
             in_file_name (str): path of input file, can be .fastq, .fastq.gz
                 or .fastq.bz2
             out_file_name (str): path of output file, can be .fastq, .fastq.gz
@@ -39,7 +39,7 @@ class QualFilter(pyngsqc.QualBase):
             # Local args
             # Inherited kwargs
             qual_offset=64,
-            compression=pyngsqc.GUESS_COMPRESSION,
+            compression="guess",
             deduplicate_header=True,
             verbose=False,
             print_summary=False,

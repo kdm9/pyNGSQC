@@ -29,7 +29,7 @@ class Collapser(pyngsqc.Base):
             out_file_name,
             # Local args
             # Inherited kwargs
-            compression=pyngsqc.GUESS_COMPRESSION,
+            compression="guess",
             deduplicate_header=True,
             verbose=False,
             print_summary=False,

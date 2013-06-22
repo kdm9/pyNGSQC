@@ -27,7 +27,7 @@ class QualTrimmer(pyngsqc.QualBase):
             # Inherited kwargs
             qual_offset=pyngsqc.DEFAULT_QUAL_OFFSET,
             qual_threshold=pyngsqc.DEFAULT_QUAL_THRESHOLD,
-            compression=pyngsqc.GUESS_COMPRESSION,
+            compression="guess",
             deduplicate_header=True,
             verbose=False,
             print_summary=False,

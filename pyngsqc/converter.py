@@ -24,7 +24,7 @@ class FastqToFasta(pyngsqc.Base):
         out_file_name,
         remove_header=False,
         deduplicate_header=True,
-        compression=pyngsqc.GUESS_COMPRESSION
+        compression="guess"
     ):
         super(FastqToFasta, self).__init__(
             in_file_name,
@@ -63,7 +63,7 @@ class ConvertQualOffset(pyngsqc.Base):
         in_qual_offset=33,
         out_qual_offset=64,
         deduplicate_header=True,
-        compression=pyngsqc.GUESS_COMPRESSION
+        compression="guess"
     ):
         super(ConvertQualOffset, self).__init__(
             in_file_name,

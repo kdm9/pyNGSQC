@@ -26,7 +26,7 @@ class HardTrimmer(pyngsqc.Base):
             out_file_name,
             length=15,
             verbose=False,
-            compression=pyngsqc.GUESS_COMPRESSION,
+            compression="guess",
             print_summary=False
     ):
         super(HardTrimmer, self).__init__(

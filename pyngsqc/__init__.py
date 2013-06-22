@@ -26,12 +26,6 @@ from array import array
 DEFAULT_QUAL_OFFSET = 33
 DEFAULT_QUAL_THRESHOLD = 15
 
-## Compression
-GUESS_COMPRESSION = 0
-NO_COMPRESSION = 1
-GZIPPED = 2
-BZIPP2ED = 3
-
 ## Barcode postion
 BARCODE_FORWARD_ONLY = 0
 BARCODE_REVERSE_ONLY = 0  # Not Implemented
@@ -76,7 +70,7 @@ class Base(object):
             in_file_name,
             out_file_name,
             verbose=False,
-            compression=GUESS_COMPRESSION,
+            compression="guess",
             deduplicate_header=True,
             print_summary=False
     ):
@@ -110,7 +104,7 @@ class QualBase(Base):
             # Inherited kwargs
             verbose=False,
             print_summary=False,
-            compression=GUESS_COMPRESSION,
+            compression="guess",
             deduplicate_header=True,
             # Local kwargs
             qual_offset=DEFAULT_QUAL_OFFSET,
@@ -132,20 +126,20 @@ class _GenericFileHandle(object):
     READ = 0
     WRITE = 1
 
-    def __init__(self, file_name, mode=READ, compression=GUESS_COMPRESSION):
+    def __init__(self, file_name, mode=READ, compression="guess"):
         self.file_name = file_name
         if mode == self.READ or mode == self.WRITE:
             self.mode = mode
         else:
-            raise ValueError("%i is not a valid IO mode" % mode)
-        if compression == GUESS_COMPRESSION:
+            raise ValueError("%r is not a valid IO mode" % mode)
+        if compression == "guess":
             self.compression = self._guess_compression(self.file_name)
-        elif compression == NO_COMPRESSION or compression == GZIPPED or \
-                compression == BZIPP2ED:
+        elif compression == "none" or compression == "gzip" or \
+                compression == "bzip2":
             self.compression = compression
         else:
             raise ValueError(
-                "%i is not a valid compression mode" %
+                "%r is not a valid compression mode" %
                 compression
             )
 
@@ -154,18 +148,18 @@ class _GenericFileHandle(object):
         gz_exts = [".gz", ".gzip"]
         bz2_exts = [".bz", ".bz2", ".bzip2"]
         if ext in gz_exts:
-            return GZIPPED
+            return "gzip"
         elif ext in bz2_exts:
-            return BZIPP2ED
+            return "bzip2"
         else:
-            return NO_COMPRESSION
+            return "none"
 
     def get(self):
-        if self.compression == NO_COMPRESSION:
+        if self.compression == "none":
             return self._get_plaintext()
-        elif self.compression == GZIPPED:
+        elif self.compression == "gzip":
             return self._get_gzip()
-        elif self.compression == BZIPP2ED:
+        elif self.compression == "bzip2":
             return self._get_bzip2()
         else:
             raise ValueError(self.compression)
@@ -201,18 +195,18 @@ class _IOObject(object):
 
 class _Writer(_IOObject):
 
-    def __init__(self, file_name, compression=GUESS_COMPRESSION):
+    def __init__(self, file_name, compression="guess"):
         super(_Writer, self).__init__()
         self.io = _GenericFileHandle(
             file_name,
-            mode=_GenericFileHandle.WRITE,
+            mode="write",
             compression=compression
         ).get()
 
 
 class FastqWriter(_Writer):
 
-    def __init__(self, file_name, compression=GUESS_COMPRESSION):
+    def __init__(self, file_name, compression="guess"):
         super(FastqWriter, self).__init__(file_name, compression)
 
     def write(self, reads):
@@ -229,7 +223,7 @@ class FastqWriter(_Writer):
 
 
 class FastaWriter(_Writer):
-    def __init__(self, file_name, compression=GUESS_COMPRESSION):
+    def __init__(self, file_name, compression="guess"):
         super(FastaWriter, self).__init__(file_name, compression)
 
     def write(self, reads):
@@ -251,7 +245,7 @@ class _Reader(_IOObject):
             self,
             file_name,
             deduplicate_header=True,
-            compression=GUESS_COMPRESSION
+            compression="guess"
     ):
         super(_Reader, self).__init__()
         self.file_name = file_name
@@ -273,7 +267,7 @@ class FastqReader(_Reader):
             self,
             file_name,
             deduplicate_header=True,
-            compression=GUESS_COMPRESSION
+            compression="guess"
     ):
         super(FastqReader, self).__init__(
             file_name,
@@ -319,7 +313,7 @@ class FastqRandomAccess(_Reader):
             self,
             file_name,
             deduplicate_header=True,
-            compression=GUESS_COMPRESSION
+            compression="guess"
     ):
         super(FastqRandomAccess, self).__init__(
             file_name,
